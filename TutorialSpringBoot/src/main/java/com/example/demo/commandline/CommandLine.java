@@ -22,13 +22,13 @@ public class CommandLine implements CommandLineRunner {
 
         FoodNutrient foodNutrient1 = FoodNutrient.builder()
                 .nutrientId(2983L)
-                .amount(10)
+                .amount(60)
                 .footNote("note")
                 .build();
 
         FoodNutrient foodNutrient2 = FoodNutrient.builder()
                 .nutrientId(2983L)
-                .amount(10)
+                .amount(70)
                 .footNote("note")
                 .build();
 
@@ -38,5 +38,6 @@ public class CommandLine implements CommandLineRunner {
 
         log.info("Salvo la lista");
         foodNutrientRepository.saveAll(foodNutrientList);
+
     }
 }

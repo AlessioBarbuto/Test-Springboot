@@ -4,8 +4,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.data.annotation.CreatedDate;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 @NoArgsConstructor
@@ -14,9 +19,6 @@ import javax.persistence.*;
 @Builder
 @Table(name = "foodnutrient")
 public class FoodNutrient {
-
-    //TODO Aggiungere data di creazione e modifica (svuotare il db prima) nb: la data di crazione farla
-    // mettere da hibernate con annotation [non usare Date ma LocalDateTime]
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -52,5 +54,16 @@ public class FoodNutrient {
 
     @Column(name = "min_year_acquired")
     private String minYearAcquired;
+
+    //TODO Aggiungere data di creazione e modifica (svuotare il db prima) nb: la data di crazione farla
+    // mettere da hibernate con annotation [non usare Date ma LocalDateTime]
+
+    @CreationTimestamp
+    @Column(name = "creation_date")
+    private Date creationDate;
+
+    @UpdateTimestamp
+    @Column(name = "last_modify")
+    private Date lastModify;
 
 }

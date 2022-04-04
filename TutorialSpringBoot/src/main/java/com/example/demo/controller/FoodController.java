@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 
@@ -74,6 +75,15 @@ public class FoodController {
         return new ResponseEntity<>(foodNutrientList, HttpStatus.OK);
     }
 
+
+    /**
+     * Ottengo i dati dal db che hanno parametro "amount" maggiore di 50
+     * @return
+     */
+    @GetMapping("/getFoodFilteredByAmount")
+    public ResponseEntity<List<FoodNutrient>> getFoodFilteredByAmount(){
+        return new ResponseEntity<>(foodNutrientRepository.amountGreatThanQuery(50.0), HttpStatus.OK);
+    }
 
 /*
 
