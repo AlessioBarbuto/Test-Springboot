@@ -12,8 +12,6 @@ import java.util.Optional;
 public interface FoodNutrientRepository extends JpaRepository <FoodNutrient, Long> {
 
     //template metodo 1 Hibenate
-    Optional<FoodNutrient> findById(Long id);
-
     Optional<FoodNutrient> findByAmount(Integer amount);
 
     //template metodo 2 Hibernate x query + complesse
