@@ -25,14 +25,16 @@ public class CSVService {
         Path currentRelativePath = Paths.get("");
         String basePath = currentRelativePath.toAbsolutePath().toString();
         Path pathToFile = Paths.get(basePath, "csv", csvName);
-        //skippo la prima linea e prendo solo le prime 10 linee
-        Files.lines(pathToFile).skip(1).limit(10).forEach(linesInCSV::add);
+
+        Files.lines(pathToFile).skip(1)  //skippo la prima linea
+                //.limit(1000) //prendo solo le prime 10 linee
+                .forEach(linesInCSV::add);
         return linesInCSV;
     }
 
 
     /**
-     * metodo che controlla un array e verifica che sia popolato, inoltre corregge un valore del CSV
+     * metodo che controlla un array e verifica che sia popolato
      * @param arr
      * @param i
      */

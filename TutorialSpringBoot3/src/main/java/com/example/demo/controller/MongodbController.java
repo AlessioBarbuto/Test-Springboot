@@ -7,6 +7,8 @@ import com.example.demo.model.PeopleInformation;
 import com.example.demo.repository.CountryInformationRepository;
 import com.example.demo.repository.PeopleInformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,8 +34,8 @@ public class MongodbController {
      * @return
      * @throws IOException
      */
-    @GetMapping("/writePersonOnDB")
-    public List<PeopleInformation> writePersonOnDB() throws IOException {
+    @GetMapping("/writePeopleOnDB")
+    public List<PeopleInformation> writePeopleOnDB() throws IOException {
 
         List<PeopleInformation> peopleInformationList = null;
 
@@ -69,6 +71,17 @@ public class MongodbController {
             e.printStackTrace();
         }
         return countryInformationList;
+
+    }
+
+
+    /**
+     * Ottengo i dati dal db che hanno parametro "amount" maggiore di 50
+     * @return
+     */
+    @GetMapping("/retrievePeopleByAge")
+    public ResponseEntity<List<PeopleInformation>> retrievePeopleByAge(){
+        return new ResponseEntity<>(peopleInformationRepository.updateAgeForEthnic(5,1), HttpStatus.OK);
 
     }
 

@@ -17,12 +17,12 @@ public class PeopleInformationService extends CSVService {
     public PeopleInformation mapPeople(String[] arr){
 
         PeopleInformation peopleInformation = PeopleInformation.builder()
-                .Year(Integer.parseInt(stringChecked(arr, 0)))
-                .Age(Integer.parseInt(stringChecked(arr, 1)))
-                .Ethnic(Integer.parseInt(stringChecked(arr, 2)))
-                .Sex(Integer.parseInt(stringChecked(arr, 3)))
-                .Area(Integer.parseInt(stringChecked(arr, 4)))
-                .count(Integer.parseInt(convertWrongValueOfCount(stringChecked(arr, 5))))
+                .year(Integer.parseInt(stringChecked(arr, 0)))
+                .age(Integer.parseInt(stringChecked(arr, 1)))
+                .ethnic(Integer.parseInt(stringChecked(arr, 2)))
+                .sex(Integer.parseInt(stringChecked(arr, 3)))
+                .area(stringChecked(arr, 4))
+                .count(Double.parseDouble(convertWrongValueOfCount(stringChecked(arr, 5))))
                 .build();
 
         return peopleInformation;
@@ -43,6 +43,7 @@ public class PeopleInformationService extends CSVService {
             peopleInformations.add(peopleInformation);
 
         }
+
         return peopleInformations;
     }
 
@@ -54,7 +55,7 @@ public class PeopleInformationService extends CSVService {
     public String convertWrongValueOfCount(String s) {
 
         if (s.matches("..C")) {
-            s.replaceAll("..C", "0");
+            s=s.replaceAll("..C", "0");
         }
         return s;
 
