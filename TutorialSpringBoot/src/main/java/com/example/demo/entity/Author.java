@@ -8,27 +8,41 @@ import lombok.NoArgsConstructor;
 import javax.persistence.*;
 import java.util.List;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
-@Builder
 @Table(name = "author")
 public class Author {
 
     @Id
     @GeneratedValue
     private long id;
-/*
+
 
     @Column(nullable = false)
     private String name;
-*/
 
- /*   @ManyToMany
-    @JoinTable(name = "book_author",
-            joinColumns = @JoinColumn(name = "book_id", referencedColumnName = "id"),
-            inverseJoinColumns = @JoinColumn(name = "author_id", referencedColumnName = "id"))
-    private List<Book> books;*/
 
+    @ManyToMany
+    @JoinTable
+            (name = "book_author",
+            joinColumns = {@JoinColumn(name = "book_id", referencedColumnName = "id")},
+            inverseJoinColumns = {@JoinColumn(name = "author_id", referencedColumnName = "id")}
+            )
+    private List<Book> books;
+
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public List<Book> getBooks() {
+        return books;
+    }
+
+    public void setBooks(List<Book> books) {
+        this.books = books;
+    }
 }
