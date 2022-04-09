@@ -1,53 +1,71 @@
 package com.example.demo.controller;
 
+import com.example.demo.client.CerealClient;
+import com.example.demo.client.FoodClient;
 import com.example.demo.entity.Cereal;
 import com.example.demo.entity.FoodNutrient;
 import com.example.demo.repository.CerealRepository;
 import com.example.demo.repository.FoodNutrientRepository;
-import lombok.NoArgsConstructor;
+import feign.Feign;
+import feign.Logger;
+import feign.gson.GsonDecoder;
+import feign.gson.GsonEncoder;
+import feign.okhttp.OkHttpClient;
+import feign.slf4j.Slf4jLogger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.RestTemplate;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 @RestController
 public class FoodController {
 
     //Repo foodnutrient
-    private FoodNutrientRepository foodNutrientRepository;
+    private final FoodNutrientRepository foodNutrientRepository;
     FoodController(FoodNutrientRepository repository) {foodNutrientRepository = repository;}
 
     //repo cereal
     @Autowired
     private CerealRepository cerealRepository;
-    //FoodController(CerealRepository repository2) {cerealRepository = repository2;}
+
+    //Feign FoodClient
+    FoodClient foodClient = Feign.builder()
+            .client(new OkHttpClient())
+            .encoder(new GsonEncoder())
+            .decoder(new GsonDecoder())
+            .logger(new Slf4jLogger(FoodClient.class))
+            .logLevel(Logger.Level.FULL)
+            .target(FoodClient.class, "http://localhost:8080/foodnutrientAPI");
+
+    //Feign CerealClient
+    CerealClient cerealClient = Feign.builder()
+            .client(new OkHttpClient())
+            .encoder(new GsonEncoder())
+            .decoder(new GsonDecoder())
+            .logger(new Slf4jLogger(CerealClient.class))
+            .logLevel(Logger.Level.FULL)
+            .target(CerealClient.class, "http://localhost:8080/cerealsAPI");
 
     /**
      * Ottengo le API del microservizio B
      * @return
      */
     @GetMapping("/getFoodAPI")
-    public ResponseEntity<List<FoodNutrient>> getFoodAPI(){
-        FoodNutrient[] foodNutrients = null;
-        List<FoodNutrient> foodNutrientList = new ArrayList<>();
-        String url = "http://localhost:8080/foodnutrientAPI";
+    public ResponseEntity<List<FoodNutrient>> getFoodAPI() {
 
-        RestTemplate restTemplate = new RestTemplate();
-        try{
-            foodNutrients = restTemplate.getForEntity(url, FoodNutrient[].class).getBody();
-            //Salvo in una lista
-            foodNutrientList.addAll(Arrays.asList(foodNutrients));
-        } catch(Exception e){
-            e.getMessage();
+        List<FoodNutrient> foodNutrientList = null;
+        try {
+            foodNutrientList = new ArrayList<>(foodClient.findAllFoods());
+        }catch (Exception e){
+            e.printStackTrace();
         }
 
         return new ResponseEntity<>(foodNutrientList, HttpStatus.OK);
     }
+
 
     /**
      * Scrivo sul db le FoodApi ricevute dal ms B
@@ -56,45 +74,31 @@ public class FoodController {
     @GetMapping("/writeFoodsOnDB")
     public ResponseEntity<List<FoodNutrient>> writeFoodsOnDB(){
 
-        FoodNutrient[] foodNutrients = null;
-        List<FoodNutrient> foodNutrientList = new ArrayList<>();
-        String url = "http://localhost:8080/foodnutrientAPI";
-
-        RestTemplate restTemplate = new RestTemplate();
-        try{
-            foodNutrients = restTemplate.getForEntity(url, FoodNutrient[].class).getBody();
-            //salvo in una lista
-            foodNutrientList.addAll(Arrays.asList(foodNutrients));
-
-            foodNutrientRepository.saveAll(foodNutrientList);
-
-        } catch(Exception e){
-            e.getMessage();
+        List<FoodNutrient> foodNutrientList = null;
+        try {
+            foodNutrientList = new ArrayList<>(foodClient.findAllFoods());
+        }catch (Exception e){
+            e.printStackTrace();
         }
+
+        assert foodNutrientList != null;
+        foodNutrientRepository.saveAll(foodNutrientList);
 
         return new ResponseEntity<>(foodNutrientList, HttpStatus.OK);
     }
 
-/**
+
+    /**
      * Scrivo sul db le CerealsApi ricevute dal ms B
      * @return
      */
-
     @GetMapping("/writeCerealsOnDB")
     public ResponseEntity<List<Cereal>> writeCerealsOnDB(){
 
-        Cereal[] cereals = null;
-        String url = "http://localhost:8080/cerealsAPI";
         List<Cereal> cerealList = new ArrayList<>();
-        RestTemplate restTemplate = new RestTemplate();
-
         try{
-            cereals = restTemplate.getForEntity(url, Cereal[].class).getBody();
-            //salvo in una lista
-            cerealList = (Arrays.asList(cereals));
-
+            cerealList = cerealClient.findAllCereals();
             cerealRepository.saveAll(cerealList);
-
         } catch(Exception e){
             e.getMessage();
         }

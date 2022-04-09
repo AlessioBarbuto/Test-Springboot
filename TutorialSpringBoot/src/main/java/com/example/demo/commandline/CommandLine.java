@@ -17,7 +17,7 @@ public class CommandLine implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        popolamentoService.populateDB();
+        //popolamentoService.populateDB();
 
     }
 
