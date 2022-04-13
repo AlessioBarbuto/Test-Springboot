@@ -9,6 +9,7 @@ import com.example.demo.repository.PeopleInformationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -34,6 +35,7 @@ public class MongodbController {
      * @return
      * @throws IOException
      */
+    @Transactional
     @GetMapping("/writePeopleOnDB")
     public List<PeopleInformation> writePeopleOnDB() throws IOException {
 
@@ -83,6 +85,14 @@ public class MongodbController {
     public ResponseEntity<List<PeopleInformation>> retrievePeopleByAge(){
         return new ResponseEntity<>(peopleInformationRepository.updateAgeForEthnic(5,1), HttpStatus.OK);
 
+    }
+
+    @GetMapping("/findPeopleByAreaAndCount")
+    public ResponseEntity<List<PeopleInformation>> findPeopleByAreaAndCount(){
+        String area = "01";
+        long count = 795;
+
+        return new ResponseEntity<>(peopleInformationService.getAllPeopleByAreaAndCount(area, count), HttpStatus.OK);
     }
 
 }

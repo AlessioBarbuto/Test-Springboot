@@ -12,7 +12,7 @@ import java.util.List;
 
 @Slf4j
 @Service
-public class CSVService {
+public abstract class CSVService {
 
     /**
      * Metodo per leggere le prime 10 righe del CSV
@@ -27,7 +27,7 @@ public class CSVService {
         Path pathToFile = Paths.get(basePath, "csv", csvName);
 
         Files.lines(pathToFile).skip(1)  //skippo la prima linea
-                //.limit(1000) //prendo solo le prime 10 linee
+                .limit(1000) //prendo solo le prime 10 linee
                 .forEach(linesInCSV::add);
         return linesInCSV;
     }
@@ -48,7 +48,5 @@ public class CSVService {
         }
         return "";
     }
-
-
 
 }

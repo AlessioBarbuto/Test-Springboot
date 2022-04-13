@@ -1,13 +1,25 @@
 package com.example.demo.Service;
 
 import com.example.demo.model.PeopleInformation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PeopleInformationService extends CSVService {
+
+//    @PersistenceContext
+      EntityManager entityManager;
 
     /**
      *metodo che mappa un elemento PeopleInformation
@@ -60,5 +72,33 @@ public class PeopleInformationService extends CSVService {
         return s;
 
     }
+
+//Criteria Query
+    public List<PeopleInformation> getAllPeopleByAreaAndCount(String area, Long count){
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<PeopleInformation> criteriaBuilderQuery = criteriaBuilder.createQuery(PeopleInformation.class);
+
+        Root<PeopleInformation> client = criteriaBuilderQuery.from(PeopleInformation.class);
+        List<Predicate> predicates = new ArrayList<>();
+
+        //in criteria posso aggiungere ordinamento, paginazione ecc..
+        if (area != null) {
+            predicates.add(criteriaBuilder.equal(client.get("area"), area));
+        }
+        if (count != null) {
+            predicates.add(criteriaBuilder.like(client.get("count"), "%" + count + "%"));
+        }
+
+        //trasformo criteria in array di predicati
+        criteriaBuilderQuery.where(predicates.toArray(new Predicate[0]))
+                .orderBy(criteriaBuilder.asc(client.get("idClient"))); //ordinamento
+
+        return entityManager.createQuery(criteriaBuilderQuery).getResultList();
+
+    }
+
+
+
 
 }

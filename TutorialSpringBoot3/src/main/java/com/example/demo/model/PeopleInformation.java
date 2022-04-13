@@ -7,6 +7,7 @@ import org.bson.types.ObjectId;
 import org.hibernate.annotations.CreationTimestamp;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.io.Serializable;
 import java.time.LocalDateTime;
 
 
@@ -15,11 +16,11 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 @Document("peopleInformation")
-public class PeopleInformation {
+public class PeopleInformation implements Serializable {
 
     @BsonProperty("_id")
     @BsonId
-    private ObjectId id;
+    private String id;
 
     private int year;
     private int age;

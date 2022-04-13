@@ -1,13 +1,7 @@
 package com.example.demo.service;
 
-import com.example.demo.entity.Address;
-import com.example.demo.entity.Author;
-import com.example.demo.entity.Book;
-import com.example.demo.entity.Library;
-import com.example.demo.repository.AddressRepository;
-import com.example.demo.repository.AuthorRepository;
-import com.example.demo.repository.BookRepository;
-import com.example.demo.repository.LibraryRepository;
+import com.example.demo.entity.*;
+import com.example.demo.repository.*;
 import com.github.javafaker.Faker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +20,8 @@ public class PopolamentoService {
     LibraryRepository libraryRepository;
     @Autowired
     AuthorRepository authorRepository;
+    @Autowired
+    CompanyRepository companyRepository;
 
 
     Faker faker = new Faker();
@@ -68,6 +64,11 @@ public class PopolamentoService {
                 author.setName(faker.name().firstName());
                 author.setBooks(bookList);
                 authorRepository.save(author);
+
+                Company company = new Company();
+                company.setName(faker.company().name());
+                company.setAuthor(author);
+                companyRepository.save(company);
 
                 j++;
 

@@ -10,7 +10,7 @@ import java.util.List;
 
 
 @Repository
-public interface PeopleInformationRepository extends MongoRepository<PeopleInformation , Long> {
+public interface PeopleInformationRepository extends MongoRepository<PeopleInformation , String> {
 
     Integer countByAgeBetween(Integer MinAge, Integer maxAge);
 
@@ -21,7 +21,6 @@ public interface PeopleInformationRepository extends MongoRepository<PeopleInfor
     @Modifying
     @Query("UPDATE alessiotest.peopleInformation p SET p.age = :ageToSet WHERE p.ethnic = ethnicValue ")
     List<PeopleInformation> updateAgeForEthnic(Integer ageToSet, Integer ethnicValue);
-
 
 }
 

@@ -3,11 +3,19 @@ package com.example.demo.Service;
 import com.example.demo.model.CountryInformation;
 import org.springframework.stereotype.Service;
 
+import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.Root;
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class CountryInformationService extends CSVService {
+
+//    @PersistenceContext
+      EntityManager entityManager;
 
     /**
      *metodo che mappa un elemento CountryInformation
@@ -46,4 +54,19 @@ public class CountryInformationService extends CSVService {
         }
         return countryInformations;
     }
+
+//Criteria Query
+    public List<CountryInformation> findAllCountriesByCode(String code){
+
+        CriteriaBuilder criteriaBuilder = entityManager.getCriteriaBuilder();
+        CriteriaQuery<CountryInformation> criteriaBuilderQuery = criteriaBuilder.createQuery(CountryInformation.class);
+
+        Root<CountryInformation> client = criteriaBuilderQuery.from(CountryInformation.class);
+        Predicate predicate = criteriaBuilder.equal(client.get("code"), code);
+
+        criteriaBuilderQuery.where(predicate);
+        return entityManager.createQuery(criteriaBuilderQuery).getResultList();
+
+    }
+
 }

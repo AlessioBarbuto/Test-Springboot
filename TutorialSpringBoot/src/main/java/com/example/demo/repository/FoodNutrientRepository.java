@@ -21,7 +21,4 @@ public interface FoodNutrientRepository extends JpaRepository <FoodNutrient, Lon
     @Query("SELECT a FROM FoodNutrient a WHERE a.amount >:inputAmount")
     List<FoodNutrient> amountGreatThanQuery(@Param("inputAmount") Double amount);
 
-    //TODO: inventare 3 relazioni (1 a 1, 1 a molti e molti a molti) e creo 3 entity con questo tipo di relazioni
-    // poi faccio query. INDICI composti: cosa sono, come si definiscono, perchè ecc. svantaggi degli indici?
-    // poi tipi di join, inner, full outer, right e left... AT: uni e bi direzionali
 }

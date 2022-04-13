@@ -1,15 +1,19 @@
 package com.example.demo.controller;
 
-import com.example.demo.Service.CountryInformationService;
-import com.example.demo.Service.PeopleInformationService;
 import com.example.demo.model.PeopleInformation;
-import com.example.demo.repository.CountryInformationRepository;
 import com.example.demo.repository.PeopleInformationRepository;
+import org.bson.types.ObjectId;
+import org.hibernate.Session;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.query.Criteria;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import javax.websocket.server.PathParam;
 import java.util.List;
 import java.util.Optional;
@@ -28,12 +32,12 @@ public class PeopleCrudController {
     }
 
     @GetMapping("/getPeopleById/{id}")
-    ResponseEntity<Optional<PeopleInformation>> getAllPeopleById(@PathParam("id") Long id){
+    ResponseEntity<Optional<PeopleInformation>> getAllPeopleById(@PathParam("id") String id){
         return new ResponseEntity<Optional<PeopleInformation>>(peopleInformationRepository.findById(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/deletePeopleById/{id}")
-    void deleteById(@PathParam("id") Long id){
+    void deleteById(@PathParam("id") String id){
         peopleInformationRepository.deleteById(id);
     }
 
@@ -43,7 +47,7 @@ public class PeopleCrudController {
     }
 
     @PutMapping("/updatePeople/{id}")
-    ResponseEntity<PeopleInformation> updatePeople(@PathParam("id") Long id, @RequestBody PeopleInformation updatedParams) throws Exception {
+    ResponseEntity<PeopleInformation> updatePeople(@PathParam("id") String id, @RequestBody PeopleInformation updatedParams) throws Exception {
         PeopleInformation peopleToUpdate = peopleInformationRepository.findById(id).orElseThrow(Exception::new);
         peopleToUpdate.setAge(updatedParams.getAge());
         peopleToUpdate.setArea(updatedParams.getArea());
@@ -65,5 +69,6 @@ public class PeopleCrudController {
         peopleInformation.setYear(peopleToAdd.getYear());
         return new ResponseEntity<>(peopleInformationRepository.save(peopleToAdd), HttpStatus.OK);
     }
+
 
 }

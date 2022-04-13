@@ -1,10 +1,5 @@
 package com.example.demo.entity;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-
 import javax.persistence.*;
 import java.util.List;
 
@@ -16,10 +11,12 @@ public class Author {
     @GeneratedValue
     private long id;
 
-
     @Column(nullable = false)
     private String name;
 
+    @ManyToOne
+    @JoinColumn(name = "company_id")
+    private Company company;
 
     @ManyToMany
     @JoinTable
@@ -29,7 +26,7 @@ public class Author {
             )
     private List<Book> books;
 
-
+//getters & setters
     public String getName() {
         return name;
     }
@@ -44,5 +41,13 @@ public class Author {
 
     public void setBooks(List<Book> books) {
         this.books = books;
+    }
+
+    public Company getCompany() {
+        return company;
+    }
+
+    public void setCompany(Company company) {
+        this.company = company;
     }
 }
