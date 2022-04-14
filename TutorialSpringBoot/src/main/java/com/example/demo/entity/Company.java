@@ -33,4 +33,13 @@ public class Company {
     public void setAuthor(Author author) {
         this.author = author;
     }
+
+    public Company(String name, Author author) {
+        this.name = name;
+        this.author = author;
+    }
+
+    public Company (){
+
+    }
 }

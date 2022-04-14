@@ -27,6 +27,8 @@ public class Author {
     private List<Book> books;
 
 //getters & setters
+    public long getId(){return id;}
+
     public String getName() {
         return name;
     }
