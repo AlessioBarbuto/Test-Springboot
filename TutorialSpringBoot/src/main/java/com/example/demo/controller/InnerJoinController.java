@@ -18,9 +18,9 @@ public class InnerJoinController {
     @Autowired
     CompanyRepository companyRepository;
 
-    @GetMapping("/innerJoin/{authorName}")
+   /* @GetMapping("/innerJoin/{authorName}")
     ResponseEntity<List<Author>> executeInnerJoin(@PathParam("authorName") String authorName){
         return new ResponseEntity<>(companyRepository.innerJoin(authorName), HttpStatus.OK);
-    }
+    }*/
 
 }

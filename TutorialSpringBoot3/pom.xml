@@ -62,6 +62,23 @@
 			<groupId>org.springframework.data</groupId>
 			<artifactId>spring-data-jpa</artifactId>
 		</dependency>
+
+		<!-- Cache Hibernate -->
+
+		<dependency>
+			<groupId>org.hibernate</groupId>
+			<artifactId>hibernate-ehcache</artifactId>
+			<version>5.2.2.Final</version>
+		</dependency>
+
+		<!-- redis -->
+
+		<dependency>
+			<groupId>org.redisson</groupId>
+			<artifactId>redisson-hibernate-53</artifactId>
+			<version>3.12.1</version>
+		</dependency>
+
 	</dependencies>
 
 	<build>

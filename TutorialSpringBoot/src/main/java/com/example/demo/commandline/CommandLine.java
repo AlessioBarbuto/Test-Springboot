@@ -51,6 +51,7 @@ public class CommandLine implements CommandLineRunner {
         /**Combinare il risultato di 3 tabelle (inventare indirizzo autore). Query che interroga 3 tabelle
          //(es. che estrae tutti i libri di un autore + azienda dell'autore(da un'altra tabella)) **/
 
+        /*
         //recupero autore dal nome
         log.info("eseguo query1");
         List<Author> authorList = authorRepository.findByName("Jakob");
@@ -78,7 +79,7 @@ public class CommandLine implements CommandLineRunner {
         List<Author> companies1 = companyRepository.innerJoin("Tressa");
         log.info("ritorno: "+companies1.get(0).getCompany());
 
-
+*/
     }
 
 

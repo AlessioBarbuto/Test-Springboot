@@ -38,7 +38,7 @@ public class TransactionsCommandLine implements CommandLineRunner {
     }
 
     /** Approccio Dichiarativo **/
-    @Transactional(rollbackFor = { SQLException.class })
+    /*@Transactional(rollbackFor = { SQLException.class })
     public void createWithCheckedException(Company company) throws SQLException {
         companyRepository.save(company);
         throw new SQLException("Throwing exception for rollback");
@@ -50,12 +50,15 @@ public class TransactionsCommandLine implements CommandLineRunner {
         throw new SQLException("Throwing exception for rollback");
     }
 
+
+     */
     /** Approccio programmatico **/
-    public void createWithProgrammatic(Company company) {
+    /*public void createWithProgrammatic(Company company) {
         try {
             companyRepository.save(company);
         } catch (Exception e) {
             TransactionAspectSupport.currentTransactionStatus().setRollbackOnly();
         }
-    }
+    }*/
+
 }

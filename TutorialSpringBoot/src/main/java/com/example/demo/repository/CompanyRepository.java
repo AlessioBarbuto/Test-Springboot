@@ -18,7 +18,7 @@ public interface CompanyRepository extends CrudRepository<Company, Long> {
     @Query(value = "SELECT c FROM Company c WHERE author_id = :authorId")
     Company findByAuthorId(long authorId);
 
-    @Query(value = "SELECT a FROM Company c INNER JOIN c.author a WHERE c.author.name = :name")
-    List<Author> innerJoin(String name);
+    //@Query(value = "SELECT a FROM Company c JOIN c.author a JOIN c.book b WHERE c.author.name = :name")
+    //List<Author> innerJoin(String name);
 
 }
