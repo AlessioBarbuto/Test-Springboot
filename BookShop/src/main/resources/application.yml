@@ -11,7 +11,7 @@ spring:
       on-profile: local
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/postgres
+    url: jdbc:postgresql://localhost:5432/kafkatest
     username: postgres
     password: asdf
   jpa:
@@ -29,9 +29,9 @@ spring:
       key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
       value-serializer: org.apache.kafka.common.serialization.StringSerializer
       properties:
-        acks: all
-        retries: 10
-        retry.backoff.ms: 1000
+        acks: all #the producer gets an ack when all in-sync replicas (brokers) have received the record
+        retries: 10 #the maximum attempts you want to retry
+        retry.backoff.ms: 1000 #the time to wait before attempting to retry
     admin:
       properties:
         #bootstrap.servers: 192.168.1.164:9092,192.168.1.164:9093,192.168.1.164:9094

@@ -1,5 +1,7 @@
 package com.example.demo.domain;
 
+import com.example.demo.entity.Book;
+import com.example.demo.entity.Ordine;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,7 +9,6 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.awt.print.Book;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -19,6 +20,7 @@ public class LibraryEvent {
     private LibraryEventType libraryEventType;
     @NotNull
     @Valid
-    private Book book;
+    private Ordine ordine;
+
 
 }

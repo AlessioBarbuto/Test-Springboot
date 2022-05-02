@@ -24,10 +24,18 @@ public class Ordine {
     @CreationTimestamp
     private LocalDateTime creationDate;
 
-
+    private Integer quantity;
 
 
     public Ordine() {
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 
     public Buyer getBuyer() {
@@ -46,8 +54,10 @@ public class Ordine {
         this.book = book;
     }
 
-    public Ordine(Buyer buyer, Book book) {
+    public Ordine(Buyer buyer, Book book, Integer quantity) {
         this.buyer = buyer;
         this.book = book;
+        this.quantity = quantity;
+
     }
 }

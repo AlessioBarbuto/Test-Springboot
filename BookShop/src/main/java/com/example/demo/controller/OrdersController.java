@@ -45,7 +45,7 @@ public class OrdersController {
             if (startqty >= buyBookDto.getQuantity()) {
 
                 Buyer user = buyerRepository.findByUsername(buyBookDto.getUsername());
-                Ordine ordine = new Ordine(user, book);
+                Ordine ordine = new Ordine(user, book, buyBookDto.getQuantity());
                 ordineRepository.save(ordine);
 
                 int updatedQty = startqty - buyBookDto.getQuantity();
