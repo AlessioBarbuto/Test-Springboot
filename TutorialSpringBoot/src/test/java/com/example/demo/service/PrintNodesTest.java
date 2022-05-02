@@ -92,6 +92,38 @@ class PrintNodesTest {
         node7.addChild(new Node(12));
 
 
-        PrintNodes.insertNodeAtPosition(root, new Node(13) ,12);
+        PrintNodes.insertNodeAtPosition(root, new Node(13) ,null);
     }
+
+    @Test
+    void delNodeByNumber() {
+        Node root = new Node(1);
+        root.addChild(new Node(2));
+        root.addChild(new Node(3));
+        root.addChild(new Node(4));
+
+        Node node2 = root.getChildren().get(0);
+        node2.addChild(new Node(5));
+        node2.addChild(new Node(6));
+
+        Node node4 = root.getChildren().get(2);
+        node4.addChild(new Node(7));
+        node4.addChild(new Node(8));
+
+        Node node5 = node2.getChildren().get(0);
+        node5.addChild(new Node(9));
+        node5.addChild(new Node(10));
+
+        Node node7 = node4.getChildren().get(0);
+        node7.addChild(new Node(11));
+        node7.addChild(new Node(12));
+
+
+       // PrintNodes.printTree(root);
+       // PrintNodes.delNodeByNumber(,root ,6);
+       // log.info("-----------------------------------------");
+       // PrintNodes.printTree(root);
+
+    }
+
 }

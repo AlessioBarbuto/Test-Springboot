@@ -9,11 +9,12 @@ import com.example.demo.repository.BuyerRepository;
 import com.example.demo.repository.OrdineRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Random;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -27,6 +28,9 @@ public class OrdersController {
     BookRepository bookRepository;
     @Autowired
     BuyerRepository buyerRepository;
+
+    @Autowired
+    private Environment env;
 
     ReentrantLock lock = new ReentrantLock();
 
@@ -58,6 +62,12 @@ public class OrdersController {
         }*/
         log.info("Disponibilità terminata!");
         return new ResponseEntity<String>("Disponibilità Terminata!" , HttpStatus.OK);
+    }
+
+    @GetMapping("/getDeveloper")
+    public String getDeveloper(){
+        return env.getProperty("developer");
+
     }
 
 

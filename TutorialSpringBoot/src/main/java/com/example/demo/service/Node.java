@@ -24,10 +24,17 @@ public class Node{
         children.add(child);
     }
 
-    public void removeChild(int index){
+    public void removeChild(Integer index){
         children.remove(index);
     }
+    public void removeChild(Node node){
+        children.remove(node);
+    }
 
+    /**
+     * TODO: Commentare
+     * @return
+     */
     public List<Node> getNodeList(){
         return children;
     }

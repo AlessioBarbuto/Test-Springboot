@@ -56,7 +56,7 @@ public class BinaryTreeCommandLine implements CommandLineRunner {
         log.info("nodo 7: "+node7.getChildren().get(0).getValue()+" "+node7.getChildren().get(1).getValue());
 */
         //stampa tutti i nodi
-        PrintNodes.printTree(root);
+        //PrintNodes.printTree(root);
         //Stampa un nodo dato il numero di quel nodo
        // Node nodo = PrintNodes.findNodeByNumber(root, 11);
        // System.out.println(nodo.toString());
