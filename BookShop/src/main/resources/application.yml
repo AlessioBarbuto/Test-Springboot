@@ -1,0 +1,38 @@
+spring:
+  profiles:
+    active: local
+---
+server:
+  port:
+    8078
+spring:
+  config:
+    activate:
+      on-profile: local
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/postgres
+    username: postgres
+    password: asdf
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+  kafka:
+    template:
+      default-topic: library-events
+    producer:
+      #bootstrap-servers: 192.168.1.164:9092,192.168.1.164:9093,192.168.1.164:9094
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.IntegerSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+      properties:
+        acks: all
+        retries: 10
+        retry.backoff.ms: 1000
+    admin:
+      properties:
+        #bootstrap.servers: 192.168.1.164:9092,192.168.1.164:9093,192.168.1.164:9094
+        bootstrap.servers: localhost:9092

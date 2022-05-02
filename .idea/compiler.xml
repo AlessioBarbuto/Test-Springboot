@@ -19,7 +19,7 @@
       <module name="demo" target="11" />
       <module name="demo (1)" target="1.8" />
       <module name="demo (2)" target="1.8" />
-      <module name="demo (3)" target="1.8" />
+      <module name="demo (3)" target="9" />
       <module name="demo (4)" target="1.8" />
       <module name="demo (5)" target="11" />
       <module name="demo (6)" target="11" />
