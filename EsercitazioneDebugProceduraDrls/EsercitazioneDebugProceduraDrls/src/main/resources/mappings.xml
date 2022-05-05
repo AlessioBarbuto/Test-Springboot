@@ -1,0 +1,1249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mappings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xmlns="http://dozer.sourceforge.net"
+          xsi:schemaLocation="http://dozer.sourceforge.net
+      http://dozer.sourceforge.net/schema/beanmapping.xsd">
+    <configuration>
+        <custom-converters>
+            <converter type="com.intesasanpaolo.bear.tit0.engine.utils.dozer.EnumStringBiDirectionalDozerConverter">
+                <class-a>java.lang.Enum</class-a>
+                <class-b>java.lang.String</class-b>
+            </converter>
+        </custom-converters>
+    </configuration>
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlInputOutputAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.resource.SogliaResource</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlParamDTO</class-b>
+        <field>
+            <a>controlloId</a>
+            <b>idCtrl</b>
+        </field>
+        <field>
+            <a>descrizione</a>
+            <b>desNote</b>
+        </field>
+        <field>
+            <a>value</a>
+            <b>value</b>
+        </field>
+        <field>
+            <a>dataInizio</a>
+            <b date-format="yyyy-MM-dd HH:mm:ss">dtStart</b>
+        </field>
+        <field>
+            <a>DataFine</a>
+            <b date-format="yyyy-MM-dd HH:mm:ss">dtEnd</b>
+        </field>
+        <field>
+            <a>user</a>
+            <b>codUser</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlInputOutputAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.AnagraficaInputOutputResource</class-b>
+        <field>
+            <a>idCtrl</a>
+            <b>controlloId</b>
+        </field>
+        <field>
+            <a>labelCurve</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>dtStart</a>
+            <b>dataInizio</b>
+        </field>
+        <field>
+            <a>dtEnd</a>
+            <b>dataFine</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <!--        <field>-->
+        <!--            <a>codSource</a>-->
+        <!--            <b>canaleCurva</b>-->
+        <!--        </field>-->
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>dataType</a>
+            <b>canaleCurva</b>
+        </field>
+
+    </mapping>
+
+    <!--    Start DtCtrlAnagDTO to AnagraficaResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.AnagraficaResource</class-b>
+        <field>
+            <a>idCtrl</a>
+            <b>idCtrl</b>
+        </field>
+        <field>
+            <a>desCtrl</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>dtStart</a>
+            <b>dataInizio</b>
+        </field>
+        <field>
+            <a>dtEnd</a>
+            <b>dataFine</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>note</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+    <!--    End DtCtrlAnagDTO to AnagraficaResource and AuditData-->
+
+    <!--    Start DtCtrlScheduleAnagDTO to ControlloResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlScheduleAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.ControlloResource</class-b>
+        <field>
+            <a>idCtrl</a>
+            <b>controlloId</b>
+        </field>
+        <field>
+            <a>desCtrl</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>tmsSchedule</a>
+            <b>schedulazione</b>
+        </field>
+        <field>
+            <a>tmsData</a>
+            <b>orarioCurva</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>note</b>
+        </field>
+        <field>
+            <a>dtStart</a>
+            <b>dataInizio</b>
+        </field>
+        <field>
+            <a>flActive</a>
+            <b>attivo</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCtrlScheduleAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+    <!--    End DtCtrlScheduleAnagDTO to ControlloResource and AuditData-->
+
+    <!--    Start DtNoteDTO to NotaResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtNoteDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.NotaResource</class-b>
+        <field>
+            <a>idNote</a>
+            <b>idNota</b>
+        </field>
+        <field>
+            <a>codModule</a>
+            <b>modulo</b>
+        </field>
+        <!--        <field>-->
+        <!--            <a>desNote</a>-->
+        <!--            <b>descrizione</b>-->
+        <!--        </field>-->
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">date</b>
+        </field>
+    </mapping>
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtNoteDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+
+    <!--    End DtNoteDTO to NotaDTO  and AuditData-->
+
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.SogliaControllo</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvEngineCurveDTO</class-b>
+        <field>
+            <a>nomeSoglia</a>
+            <b>COD_ASSET</b>
+        </field>
+        <!--        <field>-->
+        <!--            <a>descrizione</a>-->
+        <!--            <b>desNote</b>-->
+        <!--        </field>-->
+    </mapping>
+
+
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaDataWithRecords</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvEngineCurveDTO</class-b>
+        <field>
+            <a>nomeCurva</a>
+            <b>COD_ASSET</b>
+        </field>
+        <!--        <field>-->
+        <!--            <a>descrizione</a>-->
+        <!--            <b>labelCurve</b>-->
+        <!--        </field>-->
+        <!--        <field>-->
+        <!--            <a>desNote</a>-->
+        <!--            <b>nota</b>-->
+        <!--        </field>-->
+        <field>
+            <a>dataEsecuzione</a>
+            <b date-format="yyyy-MM-dd">DT_RIF</b>
+        </field>
+        <field>
+            <a>oraEsecuzione</a>
+            <b>DT_TIME</b>
+        </field>
+        <!--        <field>-->
+        <!--            <a>canaleCurva</a>-->
+        <!--            <b>codSource</b>-->
+        <!--        </field>-->
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DvEngineCurveDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaRecord</class-b>
+        <field>
+            <a>COD_CCY</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>COD_TYPE</a>
+            <b>type</b>
+        </field>
+        <field>
+            <a>COD_TENOR</a>
+            <b>tenor</b>
+        </field>
+        <field>
+            <a>SPREAD_RATE</a>
+            <b>rate</b>
+        </field>
+        <field>
+            <a>ORDER_NUM</a>
+            <b>order</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">DT_RIF</a>
+            <b>date</b>
+        </field>
+        <field>
+            <a>GG</a>
+            <b>gg</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">DT_MATURITY</a>
+            <b>dtMaturity</b>
+        </field>
+    </mapping>
+
+    <!--    Start AcquisizioneByIdAndDateDTO to AcquisizionePayloadResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DvCurveAnagAcquisizioniDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.AcquisizionePayloadResource</class-b>
+        <field>
+            <a>idPrg</a>
+            <b>acquisizioneId</b>
+        </field>
+        <field>
+            <a>dtRif</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>labelCurve</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>codType</a>
+            <b>type</b>
+        </field>
+        <field>
+            <a>codTenor</a>
+            <b>tenor</b>
+        </field>
+        <field>
+            <a>spreadRate</a>
+            <b>rate</b>
+        </field>
+        <field>
+            <a>dtMaturity</a>
+            <b>dataMaturity</b>
+        </field>
+        <field>
+            <a>dtTime</a>
+            <b>oraEsecuzione</b>
+        </field>
+        <field>
+            <a>dataType</a>
+            <b>canaleCurva</b>
+        </field>
+        <field>
+            <a>codRic</a>
+            <b>ric</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DvCurveAnagAcquisizioniDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+    <!--    End AcquisizioneByIdAndDateDTO to AcquisizioneConfigurazioneResource and AuditData-->
+
+    <!--    Start DvMonitorLogCurveDTO to AcquisizioneResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DvMonitorLogCurveDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.AcquisizioneResource</class-b>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a>curveFile</a>
+            <b>nomeFile</b>
+        </field>
+        <field>
+            <a>idPrg</a>
+            <b>idPrg</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd HH:mm:ss">dtStart</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd HH:mm:ss">dtEnd</a>
+            <b>dataFineEsecuzione</b>
+        </field>
+        <field>
+            <a>canale</a>
+            <b>provider</b>
+        </field>
+        <field>
+            <a>codStatus</a>
+            <b>stato</b>
+        </field>
+        <field>
+            <a>tipo</a>
+            <b>curvaType</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DvMonitorLogCurveDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+    </mapping>
+    <!--    End DvMonitorLogCurveDTO to AcquisizioneResource and AuditData-->
+
+    <!--    Start DtBatchConfigurationDTO to AcquisizioneConfigurazioneResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtBatchConfigurationDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.AcquisizioneConfigurazioneResource</class-b>
+        <field>
+            <a>idCodice</a>
+            <b>configId</b>
+        </field>
+        <field>
+            <a>desCodice</a>
+            <b>nome</b>
+        </field>
+        <field>
+            <a>codParam</a>
+            <b>valore</b>
+        </field>
+        <field>
+            <a>codModulo</a>
+            <b>modulo</b>
+        </field>
+        <field>
+            <a>desNota</a>
+            <b>nota</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtBatchConfigurationDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>dtTmsInsert</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+
+    </mapping>
+
+    <!--    End DtBatchConfigurationDTO to AcquisizioneConfigurazioneResource and AuditData-->
+
+    <!--    Start WtCurveDTO to CurvaResource and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtCurveDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.CurvaResource</class-b>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a>dtTime</a>
+            <b>oraEsecuzione</b>
+        </field>
+        <field>
+            <a>labelCurve</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>dataType</a>
+            <b>canaleCurva</b>
+        </field>
+
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtCurveDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userId</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+    </mapping>
+    <!--    End WtCurveDTO to CurvaResource-->
+
+    <!--    Start WtCurveManDTO to CurvaResource-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtCurveManDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.resource.CurvaResource</class-b>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a date-format="HH:mm">dtStart</a>
+            <b>oraEsecuzione</b>
+        </field>
+
+    </mapping>
+    <!--    End WtCurveManDTO to CurvaResource-->
+
+    <!--    Start WtCurveManDTO to CurvaRecord and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtCurveManDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaRecord</class-b>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>codType</a>
+            <b>type</b>
+        </field>
+        <field>
+            <a>codTenor</a>
+            <b>tenor</b>
+        </field>
+        <field>
+            <a>spreadRate</a>
+            <b>rate</b>
+        </field>
+        <field>
+            <a>orderNum</a>
+            <b>order</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>date</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtMaturity</a>
+            <b>dtMaturity</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtCurveManDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userId</b>
+        </field>
+
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+    </mapping>
+    <!--    End WtCurveManualDTO to CurvaRecord-->
+
+
+    <!--    Start DtCurveAnagDTO to CurvaDataWithRecords-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCurveAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaDataWithRecords</class-b>
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>labelCurve</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a>dtTime</a>
+            <b>oraEsecuzione</b>
+        </field>
+        <field>
+            <a>codSource</a>
+            <b>canaleCurva</b>
+        </field>
+    </mapping>
+    <!--    End DtCurveAnagDTO to CurvaDataWithRecords-->
+
+    <!-- Start  DtCurveAnagDTO to CurvaRecord and AuditData-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCurveAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaRecord</class-b>
+        <field>
+            <a>codType</a>
+            <b>type</b>
+        </field>
+        <field>
+            <a>codCcy</a>
+            <b>ccy</b>
+        </field>
+        <field>
+            <a>codTenor</a>
+            <b>tenor</b>
+        </field>
+        <field>
+            <a get-method="getSpreadReteAsString">spreadRete</a>
+            <b>rate</b>
+        </field>
+        <field>
+            <a get-method="getOrderNumberAsString">orderNum</a>
+            <b>order</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRif</a>
+            <b>date</b>
+        </field>
+        <field>
+            <a>dtMaturity</a>
+            <b>dtMaturity</b>
+        </field>
+        <field>
+            <a>gg</a>
+            <b>gg</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.DtCurveAnagDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-b>
+        <field>
+            <a>codUser</a>
+            <b>userId</b>
+        </field>
+        <field>
+            <a>codUser</a>
+            <b>userName</b>
+        </field>
+        <field>
+            <a>dtTmsIns</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</b>
+        </field>
+    </mapping>
+    <!-- End  DtCurveAnagDTO to CurvaRecord-->
+
+    <!-- Start ControlloInstanceResource to DvInstanceInputDTO -AuditData -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.resource.ControlloInstanceResource</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvInstanceInputDTO</class-b>
+        <field>
+            <a>instanceId</a>
+            <b>idRun</b>
+        </field>
+        <field>
+            <a>controlloId</a>
+            <b>idCtrl</b>
+        </field>
+        <field>
+            <a>nomeControllo</a>
+            <b>desCtrl</b>
+        </field>
+        <field>
+            <a>dataEsecuzione</a>
+            <b>dtRif</b>
+        </field>
+        <field>
+            <a>oraEsecuzione</a>
+            <b>dateEsecuzione</b>
+        </field>
+        <field>
+            <a>Stato</a>
+            <b>codStatus</b>
+        </field>
+        <field>
+            <a>motivazione</a>
+            <b>desNote</b>
+        </field>
+        <field>
+            <a>spunta</a>
+            <b>flgChecked</b>
+        </field>
+        <field>
+            <a>commento</a>
+            <b>commentNote</b>
+        </field>
+        <field>
+            <a>commentoUserId</a>
+            <b>codUserNote</b>
+        </field>
+        <field>
+            <a>commentoTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvInstanceInputDTO</class-b>
+        <field>
+            <a>userId</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+    </mapping>
+    <!-- End  DvInstanceInputDTO   -->
+
+    <!--    Start CurvaDataWithRecords to WtInputCtrlDTO-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaDataWithRecords</class-b>
+
+        <field>
+            <a>codAsset</a>
+            <b>nomeCurva</b>
+        </field>
+        <field>
+            <a>labelCurve</a>
+            <b>descrizione</b>
+        </field>
+        <field>
+            <a>desNote</a>
+            <b>nota</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dtRefCurve</a>
+            <b>dataEsecuzione</b>
+        </field>
+        <field>
+            <a>dtTime</a>
+            <b>oraEsecuzione</b>
+        </field>
+        <field>
+            <a>codSource</a>
+            <b>canaleCurva</b>
+        </field>
+    </mapping>
+    <!--    End CurvaDataWithRecords to WtInputCtrlDTO-->
+
+    <!-- Stear ControlloInstanceResource to DvInstance -AuditData -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.resource.ControlloInstanceResource</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.DvInstance</class-b>
+        <field>
+            <a>instanceId</a>
+            <b>idRun</b>
+        </field>
+        <field>
+            <a>controlloId</a>
+            <b>idCtrl</b>
+        </field>
+        <field>
+            <a>nomeControllo</a>
+            <b>desCtrl</b>
+        </field>
+        <field>
+            <a>dataEsecuzione</a>
+            <b>dateEsecuzione</b>
+        </field>
+        <field>
+            <a>oraEsecuzione</a>
+            <b date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">dateEsecuzione</b>
+        </field>
+        <field>
+            <a>Stato</a>
+            <b>codStatus</b>
+        </field>
+        <field>
+            <a>motivazione</a>
+            <b>desNote</b>
+        </field>
+        <field>
+            <a>spunta</a>
+            <b>flgChecked</b>
+        </field>
+        <field>
+            <a>commento</a>
+            <b>commentNote</b>
+        </field>
+        <field>
+            <a>commentoUserId</a>
+            <b>codUserNote</b>
+        </field>
+        <field>
+            <a>commentoTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.DvInstance</class-b>
+        <field>
+            <a>userId</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+    </mapping>
+    <!-- End Fine Entity DvInstance-->
+
+    <!-- Start ControlloInstanceResource to DvInstanceLatestDTO And Audit-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.resource.ControlloInstanceResource</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvInstanceLatestDTO</class-b>
+        <field>
+            <a>instanceId</a>
+            <b>idRun</b>
+        </field>
+        <field>
+            <a>controlloId</a>
+            <b>idCtrl</b>
+        </field>
+        <field>
+            <a>nomeControllo</a>
+            <b>desCtrl</b>
+        </field>
+        <field>
+            <a>dataEsecuzione</a>
+            <b>dateEsecuzione</b>
+        </field>
+        <field>
+            <a>oraEsecuzione</a>
+            <b>dateEsecuzione</b>
+        </field>
+        <field>
+            <a>Stato</a>
+            <b>codStatus</b>
+        </field>
+        <field>
+            <a>motivazione</a>
+            <b>desNote</b>
+        </field>
+        <field>
+            <a>spunta</a>
+            <b>flgChecked</b>
+        </field>
+        <field>
+            <a>commento</a>
+            <b>commentNote</b>
+        </field>
+        <field>
+            <a>commentoUserId</a>
+            <b>codUserNote</b>
+        </field>
+        <field>
+            <a>commentoTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.DvInstanceLatestDTO</class-b>
+        <field>
+            <a>userId</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</a>
+            <b>dtTmsInsNote</b>
+        </field>
+    </mapping>
+    <!-- End   ControlloInstanceResource to DvInstance-->
+
+    <!--    Strat Json to X   -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.json.JsonOutput</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtOutputCtrlDTO</class-b>
+        <field>
+            <a>cod_ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>spread_rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a get-method="getDataOfMaturity">dt_maturity</a>
+            <b>dtMaturity</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>order_num</a>
+            <b>orderNum</b>
+        </field>
+        <field>
+            <a>cod_type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>cod_tenor</a>
+            <b>codTenor</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.json.JsonOutput</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtOutputCtrl</class-b>
+        <field>
+            <a>cod_ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>spread_rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a get-method="getDataOfMaturity">dt_maturity</a>
+            <b>dtMaturity</b>
+        </field>
+        <field>
+            <a>name</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>order_num</a>
+            <b>orderNum</b>
+        </field>
+        <field>
+            <a>cod_type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>cod_tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>delta</a>
+            <b>numDelta</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.json.JsonInput</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-b>
+        <field>
+            <a>cod_ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>spread_rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a date-format="dd-MM-yyyy HH:mm:ss">dt_rif</a>
+            <b>dtRif</b>
+        </field>
+        <field>
+            <a>cod_asset</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>order_num</a>
+            <b>orderNum</b>
+        </field>
+        <field>
+            <a>cod_type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>cod_tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>dt_time</a>
+            <b>dtTime</b>
+        </field>
+        <field>
+            <a>cod_primary</a>
+            <b>codPrimary</b>
+        </field>
+        <field>
+            <a date-format="dd-MM-yyyy HH:mm:ss">dt_maturity</a>
+            <b>dtMaturity</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.json.JsonInput</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtInputCtrl</class-b>
+        <field>
+            <a>cod_ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>spread_rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a date-format="dd-MM-yyyy HH:mm:ss">dt_rif</a>
+            <b>dtRif</b>
+        </field>
+        <field>
+            <a>cod_asset</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>order_num</a>
+            <b>orderNum</b>
+        </field>
+        <field>
+            <a>cod_type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>cod_tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>dt_time</a>
+            <b>dtTime</b>
+        </field>
+        <field>
+            <a>cod_primary</a>
+            <b>codPrimary</b>
+        </field>
+        <field>
+            <a date-format="dd-MM-yyyy HH:mm:ss">dt_maturity</a>
+            <b>dtMaturity</b>
+        </field>
+    </mapping>
+    <!--    End Json to X   -->
+
+    <!--    Start AttributoControllo to  WtInputCtrl and Audit-->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AttributoControllo</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtInputCtrl</class-b>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtInputCtrl</class-b>
+        <field>
+            <a>userId</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="dd-MM-yyyy HH:mm:ss">lastModifyTimestamp</a>
+            <b>dtTmsIns</b>
+        </field>
+
+    </mapping>
+    <!--    End AttributoControllo to  WtInputCtrl -->
+
+    <!--    Start SogliaControllo to  WtInputCtrl -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.SogliaControllo</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtInputCtrl</class-b>
+        <field>
+            <a>nomeSoglia</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>descrizione</a>
+            <b>desNote</b>
+        </field>
+    </mapping>
+    <!--    End SogliaControllo to  WtInputCtrl -->
+
+    <!--    Start SogliaControllo to  WtInputCtrlDTO -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.SogliaControllo</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-b>
+        <field>
+            <a>nomeSoglia</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>descrizione</a>
+            <b>desNote</b>
+        </field>
+    </mapping>
+    <!--    End SogliaControllo to  WtInputCtrlDTO -->
+
+    <!-- Start  CurvaRecord to WtInputCtrl And AuditData  -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaRecord</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.model.entity.WtInputCtrl</class-b>
+        <field>
+            <a>ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a>order</a>
+            <b>orderNum</b>
+        </field>
+    </mapping>
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AuditData</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-b>
+        <field>
+            <a>userId</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd'T'HH:mm:ss.SSSZ">lastModifyTimestamp</a>
+            <b>dtTmsIns</b>
+        </field>
+    </mapping>
+    <!-- End  CurvaRecord to WtInputCtrl  -->
+
+    <!-- Start  CurvaRecord to WtInputCtrlDTO and AuditData  -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.CurvaRecord</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-b>
+        <field>
+            <a>ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>rate</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a>order</a>
+            <b>orderNum</b>
+        </field>
+        <field>
+            <a>date</a>
+            <b>dtRif</b>
+        </field>
+    </mapping>
+    <!-- End  CurvaRecord to WtInputCtrlDTO  -->
+
+    <!-- Start  AttributoControllo to WtInputCtrlDTO   -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.model.api.AttributoControllo</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtInputCtrlDTO</class-b>
+    </mapping>
+    <!-- End  AttributoControllo to WtInputCtrlDTO   -->
+
+    <!-- Start  OutputDataResource to WtOutputCtrlDTO   -->
+    <mapping>
+        <class-a>com.intesasanpaolo.bear.tit0.engine.resource.OutputDataResource</class-a>
+        <class-b>com.intesasanpaolo.bear.tit0.engine.dto.WtOutputCtrlDTO</class-b>
+        <field>
+            <a>nota</a>
+            <b>desNote</b>
+        </field>
+        <field>
+            <a>user</a>
+            <b>codUser</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd'T'HH:mm:ss">dataMaturity</a>
+            <b>dtMaturity</b>
+        </field>
+        <field>
+            <a>oraEsecuzione</a>
+            <b>dtTime</b>
+        </field>
+        <field>
+            <a date-format="yyyy-MM-dd">dataEsecuzione</a>
+            <b>dtRif</b>
+        </field>
+        <field>
+            <a>type</a>
+            <b>codType</b>
+        </field>
+        <field>
+            <a>nomeCurva</a>
+            <b>codAsset</b>
+        </field>
+        <field>
+            <a>ccy</a>
+            <b>codCcy</b>
+        </field>
+        <field>
+            <a>tenor</a>
+            <b>codTenor</b>
+        </field>
+        <field>
+            <a>valoreDaControllare</a>
+            <b>inputRate</b>
+        </field>
+        <field>
+            <a>valoreCalcolato</a>
+            <b>spreadRate</b>
+        </field>
+        <field>
+            <a>delta</a>
+            <b get-method="getNumDeltaToString">numDelta</b>
+        </field>
+        <field>
+            <a>descrizione</a>
+            <b>labelCurve</b>
+        </field>
+        <field>
+            <a>instanceId</a>
+            <b>idRun</b>
+        </field>
+        <field>
+            <a>controlloId</a>
+            <b>idCtrl</b>
+        </field>
+    </mapping>
+    <!-- End  OutputDataResource to WtOutputCtrlDTO   -->
+
+</mappings>

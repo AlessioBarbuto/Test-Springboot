@@ -1,0 +1,7 @@
+session-manager:
+  mocked: true
+
+keycloak:
+  enabled: false
+
+tracing.mocked: true

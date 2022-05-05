@@ -1,0 +1,1330 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+
+
+rule"Controllo #11_USD"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fx_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-EUR",
+            cod_type =="ASK")   
+         fx_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-EUR",
+            cod_type =="BID")       
+         spiti_ASK:  CurveStructure(
+            fl_input ==	"I",
+            cod_asset =="SPITI-EUR",
+            cod_type =="ASK")    
+         spiti_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-EUR",
+            cod_type =="BID")   
+         spiti_USD_ASK:  CurveStructure(
+            fl_input ==	"I",
+            cod_asset =="SPITI-USD",
+            cod_type =="ASK")    
+         spiti_USD_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-USD",
+            cod_type =="BID")         
+         spiti3_USD_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-USD",
+            cod_type =="ASK")    
+         spiti3_USD_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-USD",
+            cod_type =="BID")
+         fi:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="CURVE-FI-USD",
+            cod_type =="ASK")   
+         comp_FI:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPRD-COMP-FI") 
+         dyn_soglia_ask:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-USD",
+            cod_type =="ASK")
+         dyn_soglia_bid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-USD",
+            cod_type =="BID")
+            
+                  
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double irsMid = 0;
+      Double spread = null;
+ 	  Data d = null;
+ 	  Double fx = 0;
+ 	  Double year_frac = 0;
+ 	  Double basisEUR=36000;
+ 	  Double basisCCY=36000;
+ 	  Double days = 0;
+ 	  
+ 	  log.debug("Controllo #11 USD")
+	  log.debug("TENOR\tTYPE\tDTMATURITY\tFX SPOT MID\tFX MID\tSPITI3\tDAYS\tSPREAD")
+      
+      
+      Double fx_SPOT_MID = (fx_ASK.getBucket("Spot")+fx_BID.getBucket("Spot"))/2d;
+      Data dtRif = spiti_ASK.getAsOfDate();
+      
+      tenor = "ON"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+     
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+      spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+      
+      tenor = "TN"
+      tenor_d2 = "ON"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+      spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+     
+      tenor = "SN"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+        list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+      spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+     
+      tenor = "1W"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+       spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+     
+      tenor = "2W"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+       spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+     
+       tenor = "1M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+       spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+     
+     
+      tenor = "2M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+    
+    
+      tenor = "3M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+    
+    
+      tenor = "6M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+    
+      tenor = "9M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+    
+          
+      tenor = "1Y"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+      
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+    
+    
+      tenor = "18M"
+      tenor_d2 = "TN"
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_ASK.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti3_USD_ASK.getCod_asset(), spiti3_USD_ASK.getCod_type(), spiti3_USD_ASK.getCod_ccy(),spread, tenor, spread-spiti_USD_ASK.getBucket(tenor), spiti3_USD_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti3_USD_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_ASK.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_ASK.getCod_type(),spiti_USD_ASK.getBucket(tenor))
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_BID.getBucket(tenor)*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+    
+      list.add(new OUT(spiti3_USD_BID.getCod_asset(), spiti3_USD_BID.getCod_type(), spiti3_USD_BID.getCod_ccy(),spread, tenor, spread-spiti_USD_BID.getBucket(tenor), spiti3_USD_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti3_USD_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti3_USD_BID.getCod_type()+"\t"+spiti_BID.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_BID.getBucket(tenor)+"\t"+days+"\t"+spread)
+      myMap.put(tenor+"_"+spiti_BID.getCod_type(),spiti_USD_BID.getBucket(tenor))
+        
+         spread = spiti3_USD_ASK.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(fi.getCod_asset(), fi.getCod_type(), fi.getCod_ccy(),spread, tenor, spread-fi.getBucket(tenor), fi.getRow(tenor).getDouble("SOGLIA2"), fi.getDtMaturity(tenor), fi.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+fi.getCod_type()+"\t"+fi.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+fi.getBucket(tenor)+"\t"+days+"\t"+spread)
+          
+  	  insert(list)
+  	  
+end  
+
+
+rule"Controllo #11_GBP"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fx_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-GBP",
+            cod_type =="ASK")   
+         fx_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-GBP",
+            cod_type =="BID")       
+         spiti_ASK:  CurveStructure(
+            fl_input ==	"I",
+            cod_asset =="SPITI-GBP",
+            cod_type =="ASK")    
+         spiti_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-GBP",
+            cod_type =="BID")    
+         dyn_soglia_ask:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-GBP",
+            cod_type =="ASK")
+         dyn_soglia_bid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-GBP",
+            cod_type =="BID")           
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double irsMid = 0;
+      Double spread = null;
+ 	  Data d = null;
+ 	  Double fx = 0;
+ 	  Double year_frac = 0;
+ 	  Double basisEUR=36000;
+ 	  Double basisCCY=36500;
+ 	  Double days = 0;
+ 	  Double spiti3_USD_ASK = 0;
+ 	  Double spiti3_USD_BID = 0;
+ 	  
+ 	  log.debug("Controllo #11 GBP")
+	  log.debug("TENOR\tTYPE\tDTMATURITY\tFX SPOT MID\tFX MID\tSPITI3\tDAYS\tSPREAD")
+      
+      
+      Double fx_SPOT_MID = (fx_ASK.getBucket("Spot")+fx_BID.getBucket("Spot"))/2d;
+      Data dtRif = spiti_ASK.getAsOfDate();
+
+      tenor = "ON"
+      spiti_USD_ASK =  (Double)myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =   (Double)myMap.get(tenor+"_"+spiti_BID.getCod_type());
+
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+      
+      
+      tenor = "TN"
+      tenor_d2 = "ON"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "SN"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "1W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "2W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "1M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+     
+       tenor = "2M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+      
+       tenor = "3M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "6M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "9M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+            
+      tenor = "1Y"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "18M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*1/(fx_SPOT_MID+fx)/(1/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       
+   
+            
+  	  insert(list)
+  	  
+end  
+
+
+rule"Controllo #5_CHF"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fx_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-CHF",
+            cod_type =="ASK")   
+         fx_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-CHF",
+            cod_type =="BID")         
+         spiti_ASK:  CurveStructure(
+            fl_input ==	"I",
+            cod_asset =="SPITI-CHF",
+            cod_type =="ASK")    
+         spiti_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-CHF",
+            cod_type =="BID")   
+         dyn_soglia_ask:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-CHF",
+            cod_type =="ASK") 
+		 dyn_soglia_bid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-CHF",
+            cod_type =="BID")         
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double irsMid = 0;
+      Double spread = null;
+ 	  Data d = null;
+ 	  Double fx = 0;
+ 	  Double year_frac = 0;
+ 	  Double basisEUR=36000;
+ 	  Double basisCCY=36000;
+ 	  Double days = 0;
+ 	  Double spiti3_USD_ASK = 0;
+ 	  Double spiti3_USD_BID = 0;
+ 	  
+ 	  log.debug("Controllo #11 CHF")
+	  log.debug("TENOR\tTYPE\tDTMATURITY\tFX SPOT MID\tFX MID\tSPITI3\tDAYS\tSPREAD")
+      
+      
+      Double fx_SPOT_MID = (fx_ASK.getBucket("Spot")+fx_BID.getBucket("Spot"))/2d;
+      Data dtRif = spiti_ASK.getAsOfDate();
+    /**  
+     tenor = "ON"
+      spiti_USD_ASK =  myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+     **/ 
+      
+      tenor = "TN"
+      tenor_d2 = "ON"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "SN"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "1W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "2W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "1M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+     
+       tenor = "2M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+      
+       tenor = "3M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "6M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "9M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+            
+      tenor = "1Y"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "18M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 10000d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       
+   
+            
+  	  insert(list)
+  	  
+end  
+
+rule"Controllo #5_JPY"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fx_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-JPY",
+            cod_type =="ASK")   
+         fx_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="FX-SPOT-JPY",
+            cod_type =="BID")       
+         spiti_ASK:  CurveStructure(
+            fl_input ==	"I",
+            cod_asset =="SPITI-JPY",
+            cod_type =="ASK")    
+         spiti_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-JPY",
+            cod_type =="BID")      
+         dyn_soglia_ask:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-JPY",
+            cod_type =="ASK")
+         dyn_soglia_bid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="DYN-SPITI-JPY",
+            cod_type =="BID")
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double irsMid = 0;
+      Double spread = null;
+ 	  Data d = null;
+ 	  Double fx = 0;
+ 	  Double year_frac = 0;
+ 	  Double basisEUR=36000;
+ 	  Double basisCCY=36000;
+ 	  Double days = 0;
+ 	  Double spiti3_USD_ASK = 0;
+ 	  Double spiti3_USD_BID = 0;
+ 	  
+ 	  log.debug("Controllo #11 JPY")
+	  log.debug("TENOR\tTYPE\tDTMATURITY\tFX SPOT MID\tFX MID\tSPITI3\tDAYS\tSPREAD")
+      
+      
+      Double fx_SPOT_MID = (1/fx_ASK.getBucket("Spot")*100d+1/fx_BID.getBucket("Spot")*100d)/2d;
+      Data dtRif = spiti_ASK.getAsOfDate();
+   /**   
+     tenor = "ON"
+      spiti_USD_ASK =  myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(dtRif , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+      
+  **/    
+      tenor = "TN"
+      tenor_d2 = "ON"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "SN"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "1W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "2W"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "1M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+     
+       tenor = "2M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+      
+       tenor = "3M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "6M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       tenor = "9M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+            
+      tenor = "1Y"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+      tenor = "18M"
+      tenor_d2 = "TN"
+      spiti_USD_ASK = myMap.get(tenor+"_"+spiti_ASK.getCod_type());
+      spiti_USD_BID =  myMap.get(tenor+"_"+spiti_BID.getCod_type());
+      fx = (fx_ASK.getBucket(tenor)+fx_BID.getBucket(tenor))/(2d * 100d);
+      dyn_soglia_ask_value = dyn_soglia_ask.getBucket(tenor);
+      dyn_soglia_bid_value = dyn_soglia_bid.getBucket(tenor);
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_ASK.getDtMaturity(tenor_d2) , spiti_ASK.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_ASK*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+       
+      list.add(new OUT(spiti_ASK.getCod_asset(), spiti_ASK.getCod_type(), spiti_ASK.getCod_ccy(),spread, tenor, spread-spiti_ASK.getBucket(tenor), spiti_ASK.getSoglia()+dyn_soglia_ask_value, spiti_ASK.getDtMaturity(tenor), spiti_ASK.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_ASK.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_ASK+"\t"+days+"\t"+spread)
+      
+      days = dayCounter.getDifferenzaGiorniActual(spiti_BID.getDtMaturity(tenor_d2) , spiti_BID.getDtMaturity(tenor));
+      spread = ((1+spiti_USD_BID*days/basisEUR)*((fx_SPOT_MID+fx)/fx_SPOT_MID)-1)*basisCCY/days;
+      
+      list.add(new OUT(spiti_BID.getCod_asset(), spiti_BID.getCod_type(), spiti_BID.getCod_ccy(),spread, tenor, spread-spiti_BID.getBucket(tenor), spiti_BID.getSoglia()+dyn_soglia_bid_value, spiti_BID.getDtMaturity(tenor), spiti_BID.getOrderNum(tenor)));     	    
+      log.debug(tenor+"\t"+spiti_BID.getCod_type()+"\t"+spiti_ASK.getDtMaturity(tenor)+"\t"+fx_SPOT_MID+"\t"+fx+"\t"+spiti_USD_BID+"\t"+days+"\t"+spread)
+    
+       
+   
+   
+            
+  	  insert(list)
+  	  
+end  
+
+

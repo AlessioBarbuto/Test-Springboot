@@ -1,0 +1,356 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+
+
+rule"Controllo #10 ASK"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fi:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="CURVE-FI-EUR",
+            cod_type =="ASK")   
+         comp_FI:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPRD-COMP-FI")  
+         comp_RET:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPRD-COMP-RETAIL")       
+         spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")    
+         spiti:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-EUR",
+            cod_type =="ASK")  
+         output_spiti:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI-EUR",
+            cod_type =="ASK")  
+         output_fi:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="CURVE-FI-EUR",
+            cod_type =="ASK")       
+            
+
+                  
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double spread = null;
+      Double spread_fi = null;
+
+ 	  log.debug("Controllo #10 ASK")
+	  log.debug("TENOR\tTYPE\tSPITI3\tSPITI\tFI\tCOMP_FI\tCOMP_RETAIL\tSPREAD_SPITI\tSPREAD_FI")
+      
+    
+      tenor = "ON"
+      spread = spiti3.getBucket("1W")+comp_RET.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "TN"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "SN"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "1W"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));     	    
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "2W"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "1M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "2M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "3M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "6M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "9M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "1Y"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      
+      tenor = "18M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      spread_fi = MathOperator.round(spread_fi,2)
+      list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-output_fi.getBucket(tenor), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+output_fi.getBucket(tenor)+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+            
+            
+  	  insert(list)
+  	  
+end  
+
+ 
+
+
+
+rule"Controllo #10 BID"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         fi:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="CURVE-FI-EUR",
+            cod_type =="ASK")   
+         comp_FI:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPRD-COMP-FI")  
+         comp_RET:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPRD-COMP-RETAIL")       
+         spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")    
+         spiti:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI-EUR",
+            cod_type =="BID")  
+         output_spiti:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI-EUR",
+            cod_type =="BID")  
+         output_fi:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="CURVE-FI-EUR",
+            cod_type =="ASK")       
+            
+
+                  
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double spread = null;
+      Double spread_fi = null;
+      Double delta = 0.05d;
+      
+ 	  log.debug("Controllo #10 BID")
+	  log.debug("TENOR\tTYPE\tSPITI3\tSPITI\tFI\tCOMP_FI\tCOMP_RETAIL\tSPREAD_SPITI\tSPREAD_FI")
+      
+    
+      tenor = "ON"
+      spread = spiti3.getBucket("1W")+comp_RET.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      */
+      
+      tenor = "TN"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "SN"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket("1W")+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "1W"
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));     	    
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "2W"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket("1M")
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket("1M")
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket("1M")+"\t"+comp_FI.getBucket("1M")+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "1M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "2M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "3M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "6M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "9M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "1Y"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+      */
+      tenor = "18M"
+      spread = spiti3.getBucket(tenor)+comp_RET.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output_spiti.getCod_asset(), output_spiti.getCod_type(), output_spiti.getCod_ccy(),spread, tenor, spread-output_spiti.getBucket(tenor), output_spiti.getSoglia(), output_spiti.getDtMaturity(tenor), output_spiti.getOrderNum(tenor)));
+      /*
+      //spread_fi = spiti3.getBucket(tenor)+comp_FI.getBucket(tenor)
+      //spread_fi = MathOperator.round(spread_fi,2)
+      //list.add(new OUT(output_fi.getCod_asset(), "BID", output_fi.getCod_ccy(),spread_fi, tenor, spread_fi-MathOperator.round((output_fi.getBucket(tenor)-delta),2), output_fi.getSoglia(), output_fi.getDtMaturity(tenor), output_fi.getOrderNum(tenor)));
+      //log.debug(tenor+"\t"+"BID"+"\t"+spiti3.getBucket(tenor)+"\t"+output_spiti.getBucket(tenor)+"\t"+(MathOperator.round((output_fi.getBucket(tenor)-delta),2))+"\t"+comp_RET.getBucket(tenor)+"\t"+comp_FI.getBucket(tenor)+"\t"+spread+"\t"+spread_fi)
+        */    
+            
+  	  insert(list)
+  	  
+end  
+
+

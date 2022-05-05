@@ -1,0 +1,257 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+rule"Controllo #2_Ask"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+        spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")    
+        irs3mAsk:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="IRS-3M",
+            cod_type =="ASK")        
+        irs3mBid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="IRS-3M",
+            cod_type =="BID")        
+        cbu: CurveStructure(
+            fl_input =="I",
+            cod_asset =="CBU-3mE")   
+        euribor: CurveStructure(
+            fl_input =="I",
+            cod_asset =="EURIBOR")       
+        output: CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")    
+        oisDis: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="OIS-ESTER-DIS",
+	            cod_type =="MID")   
+	    fraRatesAsk: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="FRA-RATES",
+	            cod_type =="ASK")   
+	    fraRatesBid: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="FRA-RATES",
+	            cod_type =="BID")           
+	    swap: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="SWAP")             
+	                  
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      String tenor_fra=""
+      Double year_frac=0
+      Double fraRatesMid=0
+      Data dtRif = output.getAsOfDate();
+      
+      
+     
+      Double year_frac_18M =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity("6M") , swap.getDtMaturity("18M"),dayCounter.ACT360)
+      Double year_frac_6M = dayCounter.getDifferenzaGiorniCarm(dtRif, swap.getDtMaturity("6M"),dayCounter.ACT360)
+      Double irs1Ymid = (irs3mAsk.getBucket("1Y")+ irs3mBid.getBucket("1Y"))/2d
+      Double sl18m = ((MathOperator.round(spiti3.getBucket("1Y")-irs1Ymid,2)+MathOperator.round(cbu.getBucket("2Y"),2))/2d)
+      Double notional = 1000000
+    
+      log.debug("Controllo #2_Ask")
+	  log.debug("DT_END\tNOTIONAL\tSL18M\tFWD_RATES\tFINAL_FWD_RATES\tDF\tPV_FLOATING_LEG\tCFL\tYEAR_FRAC\tNPV\tSPREAD")
+    	    
+      	    
+      tenor="3M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(dtRif , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      Double npv3M = ((euribor.getBucket(tenor) + sl18m) *oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(euribor.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+euribor.getBucket(tenor)+"\t"+(euribor.getBucket(tenor) +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((euribor.getBucket(tenor) +sl18m) *oisDis.getBucket(tenor))+"\t"+npv3M+"\t"+year_frac+"\t\t")
+     
+      tenor="6M"
+      tenor_fra = "3M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv6M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv6M+"\t"+year_frac+"\t\t")
+    
+      tenor="9M"
+      tenor_fra = "6M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv9M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv9M+"\t"+year_frac+"\t\t")
+     
+      tenor="1Y"
+      tenor_fra = "9M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv1Y = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv1Y+"\t"+year_frac+"\t\t")
+      
+      tenor="15M"
+      tenor_fra = "1Y"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv15M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv15M+"\t"+year_frac+"\t\t")
+     
+      tenor="18M"
+      tenor_fra = "15M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv18M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv18M+"\t"+year_frac+"\t\t")
+      
+      Double npv = (npv3M  + npv6M + npv9M + npv1Y + npv15M + npv18M - oisDis.getBucket("18M") * notional)
+         
+      Double spread = ((npv + notional * oisDis.getBucket("18M"))/(notional*(oisDis.getBucket("6M")*year_frac_6M+oisDis.getBucket("18M")*year_frac_18M)))*100;   
+      spread = MathOperator.round(spread,2)
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, MathOperator.round(spread-output.getBucket(tenor),2), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+  
+      log.debug(oisDis.getDtMaturity("6M")+"\t"+ notional+"\t\t\t\t"+oisDis.getBucket("6M")+"\t\t\t"+year_frac_6M+"\t"+npv+"\t"+spread)
+      log.debug(oisDis.getDtMaturity("18M")+"\t"+ notional+"\t\t\t\t"+oisDis.getBucket("18M")+"\t\t\t"+year_frac_18M+"\t"+npv+"\t"+spread)
+            
+  	  insert(list)
+  	  
+end  
+
+
+rule"Controllo #2_Bid"
+    dialect"mvel"
+    when
+        
+       dayCounter: DayCounter()
+        log: Logger()
+        spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")    
+        irs3mAsk:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="IRS-3M",
+            cod_type =="ASK")        
+        irs3mBid:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="IRS-3M",
+            cod_type =="BID")        
+        cbu: CurveStructure(
+            fl_input =="I",
+            cod_asset =="CBU-3mE")   
+        euribor: CurveStructure(
+            fl_input =="I",
+            cod_asset =="EURIBOR")       
+        output: CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")    
+        oisDis: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="OIS-ESTER-DIS",
+	            cod_type =="MID")   
+	    fraRatesAsk: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="FRA-RATES",
+	            cod_type =="ASK")   
+	    fraRatesBid: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="FRA-RATES",
+	            cod_type =="BID")     
+	     swap: CurveStructure(
+	            fl_input =="I",
+	            cod_asset =="SWAP")                   
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double year_frac=0
+      Double fraRatesMid=0
+      Data dtRif = output.getAsOfDate();
+      Double year_frac_18M =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity("6M") , swap.getDtMaturity("18M"),dayCounter.ACT360)
+      Double year_frac_6M = dayCounter.getDifferenzaGiorniCarm(dtRif, swap.getDtMaturity("6M"),dayCounter.ACT360)
+      Double irs1Ymid = (irs3mAsk.getBucket("1Y")+irs3mBid.getBucket("1Y"))/2d
+      Double sl18m = ((MathOperator.round(spiti3.getBucket("1Y")-irs1Ymid,2)+MathOperator.round(cbu.getBucket("2Y"),2))/2d)
+      Double notional = 1000000
+    
+      log.debug("Controllo #2_Ask")
+	  log.debug("DT_END\tNOTIONAL\tSL18M\tFWD_RATES\tFINAL_FWD_RATES\tDF\tPV_FLOATING_LEG\tCFL\tYEAR_FRAC\tNPV\tSPREAD")
+    	    
+      tenor="3M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(dtRif , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      Double npv3M = ((euribor.getBucket(tenor) + sl18m) *oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(euribor.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+euribor.getBucket(tenor)+"\t"+(euribor.getBucket(tenor) +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((euribor.getBucket(tenor) +sl18m) *oisDis.getBucket(tenor))+"\t"+npv3M+"\t"+year_frac+"\t\t")
+     
+      tenor="6M"
+      tenor_fra = "3M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv6M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv6M+"\t"+year_frac+"\t\t")
+    
+      tenor="9M"
+      tenor_fra = "6M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv9M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv9M+"\t"+year_frac+"\t\t")
+     
+      tenor="1Y"
+      tenor_fra = "9M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv1Y = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv1Y+"\t"+year_frac+"\t\t")
+      
+      tenor="15M"
+      tenor_fra = "1Y"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv15M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv15M+"\t"+year_frac+"\t\t")
+     
+      tenor="18M"
+      tenor_fra = "15M"
+      year_frac =  dayCounter.getDifferenzaGiorniCarm(swap.getDtMaturity(tenor_fra) , swap.getDtMaturity(tenor),dayCounter.ACT360)
+      fraRatesMid = (fraRatesAsk.getBucket(tenor_fra)+fraRatesBid.getBucket(tenor_fra))/2d
+      Double npv18M = ((fraRatesMid + (sl18m)) * oisDis.getBucket(tenor)*year_frac*notional)/100d
+      log.debug(oisDis.getDtMaturity(tenor)+"\t"+ notional+"\t"+sl18m+"\t"+fraRatesMid+"\t"+(fraRatesMid +sl18m)+"\t"+oisDis.getBucket(tenor)+"\t"+((fraRatesMid +sl18m) *oisDis.getBucket(tenor))+"\t"+npv18M+"\t"+year_frac+"\t\t")
+    
+      Double npv = (npv3M  + npv6M + npv9M + npv1Y + npv15M + npv18M - oisDis.getBucket("18M") * notional)
+         
+      Double spread = ((npv + notional * oisDis.getBucket("18M"))/(notional*(oisDis.getBucket("6M")*year_frac_6M+oisDis.getBucket("18M")*year_frac_18M)))*100;   
+      spread = MathOperator.round(spread,2)-0.05
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, MathOperator.round(spread-output.getBucket(tenor),2), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+  
+      log.debug(oisDis.getDtMaturity("6M")+"\t"+ notional+"\t\t\t\t"+oisDis.getBucket("6M")+"\t\t\t"+year_frac_6M+"\t"+npv+"\t"+spread)
+      log.debug(oisDis.getDtMaturity("18M")+"\t"+ notional+"\t\t\t\t"+oisDis.getBucket("18M")+"\t\t\t"+year_frac_18M+"\t"+npv+"\t"+spread)
+            
+  	  insert(list)
+  	  
+end  		
+ 
+  		

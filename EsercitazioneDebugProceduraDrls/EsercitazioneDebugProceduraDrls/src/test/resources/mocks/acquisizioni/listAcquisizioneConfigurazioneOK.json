@@ -1,0 +1,36 @@
+{
+  "request": {
+    "method": "GET"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": [
+      {
+        "configId": "1",
+        "nome": "awYGDOKnVtTS",
+        "valore": "tkNpCHS0Av2O",
+        "auditData": {
+          "version": "1",
+          "userId": "fe0pj",
+          "userName": "Vy6ejwqiDMU5e3eF76",
+          "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+        }
+      },
+      {
+        "configId": "0",
+        "nome": "UkUmyqN",
+        "valore": "9ROFK0",
+        "auditData": {
+          "version": "1",
+          "userId": "KZ6hW",
+          "userName": "fjNhjzm7qPROvE",
+          "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+        }
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

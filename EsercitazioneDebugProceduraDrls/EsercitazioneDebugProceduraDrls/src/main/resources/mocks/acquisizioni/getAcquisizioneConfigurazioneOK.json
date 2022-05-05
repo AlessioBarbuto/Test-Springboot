@@ -1,0 +1,23 @@
+{
+  "request": {
+    "method": "GET"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "configId": "3",
+      "nome": "4MZuwSKmd",
+      "valore": "ez7pyshCZno",
+      "auditData": {
+        "version": "1",
+        "userId": "SIoVr",
+        "userName": "DFI40lwY",
+        "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+      }
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

@@ -1,0 +1,363 @@
+{
+  "request": {
+    "method": "POST"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "nomeCurva": "NOME_CURVA",
+      "dataEsecuzione": "2021-12-31",
+      "oraEsecuzione": "09:29",
+      "auditData": {
+        "version": "1",
+        "userId": "Ko9Pv",
+        "userName": "F46WG1AXqhyz",
+        "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+      },
+      "curvaRecordList": [
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "0",
+          "rate": "1.41",
+          "order": "0",
+          "auditData": {
+            "version": "1",
+            "userId": "qBBv6",
+            "userName": "V8xj8Dr",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "0",
+          "rate": "0.79",
+          "order": "0",
+          "auditData": {
+            "version": "1",
+            "userId": "s3zhq",
+            "userName": "tE8vQpdQ",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "1",
+          "rate": "0.51",
+          "order": "1",
+          "auditData": {
+            "version": "1",
+            "userId": "6w3gX",
+            "userName": "QHHqHEw3XFQMLerpj",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "1",
+          "rate": "1.41",
+          "order": "1",
+          "auditData": {
+            "version": "1",
+            "userId": "ZEkC8",
+            "userName": "gQVvuP0KtXHqQ",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "2",
+          "rate": "2.60",
+          "order": "2",
+          "auditData": {
+            "version": "1",
+            "userId": "OFiYR",
+            "userName": "4vGwihn1by9AL6X4",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "2",
+          "rate": "0.27",
+          "order": "2",
+          "auditData": {
+            "version": "1",
+            "userId": "t85xf",
+            "userName": "uU649iohk",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "3",
+          "rate": "1.39",
+          "order": "3",
+          "auditData": {
+            "version": "1",
+            "userId": "3Ws00",
+            "userName": "XSkKUHVJPM7",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "3",
+          "rate": "2.14",
+          "order": "3",
+          "auditData": {
+            "version": "1",
+            "userId": "ZpWd4",
+            "userName": "6SXu3r5HClGzhQuMRIX",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "4",
+          "rate": "0.88",
+          "order": "4",
+          "auditData": {
+            "version": "1",
+            "userId": "LFJIF",
+            "userName": "jMNuIjPEZuGW3RD1X",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "4",
+          "rate": "1.15",
+          "order": "4",
+          "auditData": {
+            "version": "1",
+            "userId": "2gsUL",
+            "userName": "Nx4Kh",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "5",
+          "rate": "1.02",
+          "order": "5",
+          "auditData": {
+            "version": "1",
+            "userId": "mLdpO",
+            "userName": "TpBldxVtXhav",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "5",
+          "rate": "0.81",
+          "order": "5",
+          "auditData": {
+            "version": "1",
+            "userId": "NuBV9",
+            "userName": "kooeh1eNCRjsiO1",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "6",
+          "rate": "0.05",
+          "order": "6",
+          "auditData": {
+            "version": "1",
+            "userId": "B29E8",
+            "userName": "vwXAbEdnM1tS",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "6",
+          "rate": "2.93",
+          "order": "6",
+          "auditData": {
+            "version": "1",
+            "userId": "mdyQW",
+            "userName": "Z3ciWWo8p4o4Kltm9",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "7",
+          "rate": "0.11",
+          "order": "7",
+          "auditData": {
+            "version": "1",
+            "userId": "HWUbd",
+            "userName": "l9utyw4guo71CpE",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "7",
+          "rate": "0.66",
+          "order": "7",
+          "auditData": {
+            "version": "1",
+            "userId": "nPoYQ",
+            "userName": "eU22M3yRQ5f6c3e",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "8",
+          "rate": "1.45",
+          "order": "8",
+          "auditData": {
+            "version": "1",
+            "userId": "vFMP2",
+            "userName": "mkrixPwn6l3",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "8",
+          "rate": "1.98",
+          "order": "8",
+          "auditData": {
+            "version": "1",
+            "userId": "U041P",
+            "userName": "WZ8ohFAi",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "9",
+          "rate": "1.46",
+          "order": "9",
+          "auditData": {
+            "version": "1",
+            "userId": "EjmmO",
+            "userName": "8lA1x8LxZvR",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "9",
+          "rate": "0.45",
+          "order": "9",
+          "auditData": {
+            "version": "1",
+            "userId": "6U5Os",
+            "userName": "FVXyIDoee",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "10",
+          "rate": "1.54",
+          "order": "10",
+          "auditData": {
+            "version": "1",
+            "userId": "A9qDa",
+            "userName": "m3qW3f1ZwLUcseR",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "10",
+          "rate": "1.29",
+          "order": "10",
+          "auditData": {
+            "version": "1",
+            "userId": "qBQsN",
+            "userName": "m7YoGH0JKD",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "11",
+          "rate": "2.45",
+          "order": "11",
+          "auditData": {
+            "version": "1",
+            "userId": "DV0xT",
+            "userName": "XFtH0IKuwDkR5",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "11",
+          "rate": "2.25",
+          "order": "11",
+          "auditData": {
+            "version": "1",
+            "userId": "5wjUS",
+            "userName": "bchjUz",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "12",
+          "rate": "0.54",
+          "order": "12",
+          "auditData": {
+            "version": "1",
+            "userId": "JTu4N",
+            "userName": "uk513Ejh",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "12",
+          "rate": "0.03",
+          "order": "12",
+          "auditData": {
+            "version": "1",
+            "userId": "LPXDq",
+            "userName": "DMtVNziDUve7SSYAIg9",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        }
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

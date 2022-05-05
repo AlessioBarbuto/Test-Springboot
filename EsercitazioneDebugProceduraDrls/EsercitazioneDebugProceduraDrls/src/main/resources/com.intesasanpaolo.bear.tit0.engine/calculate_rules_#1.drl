@@ -1,0 +1,245 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+ 
+rule"Controllo #1_bid"
+    dialect"mvel"
+    when
+        fmax: Max()
+        log: Logger()
+        output: CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")
+        df_bid: CurveStructure(
+            fl_input =="I",
+            cod_asset =="DEPO-FACILITY",
+            cod_type =="BID")
+        intesa_bid: CurveStructure(
+            fl_input =="I",
+            cod_asset =="INTESA01",
+            cod_type =="BID")
+        spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")    
+        perc_blend_cc: CurveStructure(
+            fl_input =="I",
+            cod_asset =="PERC-BLEND-CC")
+        perc_blend_cd: CurveStructure(
+            fl_input =="I",
+            cod_asset =="PERC-BLEND-CD")
+        cartolare: CurveStructure(
+            fl_input =="I",
+            cod_asset =="CARTOLARE",
+            cod_type =="BID" )      
+             
+     
+    then
+      
+      OUT_list list = new OUT_list();
+      String tenor = "";
+      Double spread = null;
+      
+      log.debug( "Controllo #1_bid")
+      log.debug( "TENOR\tCOD_TYPE\tDF_BID\tINTESA_BID\tDT_MATURITY\tCARTOLARE\tPERC_BLEND_CC\tPERC_BLEND_CD\tSPREAD")
+      tenor = "ON";
+      spread = MathOperator.round(fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor)),2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+    
+      tenor = "TN";
+      spread = MathOperator.round(fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor)),2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+     
+      tenor = "SN";
+      spread = MathOperator.round(fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor)),2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+     
+      tenor = "1W";
+      spread =  MathOperator.round(spiti3.getInterpolatedRate(output.getDtMaturity(tenor)),2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t\t"+ output.getDtMaturity(tenor)+"\t\t\t\t"+spread)
+      
+      tenor = "2W";
+      spread =  MathOperator.round(spiti3.getInterpolatedRate(output.getDtMaturity(tenor)),2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t\t"+ output.getDtMaturity(tenor)+"\t\t\t\t"+spread)
+   
+      tenor = "1M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "2M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "3M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "6M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "9M";
+      spread = ((cartolare.getBucket("6M")+cartolare.getBucket("1Y"))/2d*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+(cartolare.getBucket("6M")+cartolare.getBucket("1Y"))/2d+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "1Y";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue());
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+ 
+      insert(list)
+end  		
+ 
+ 
+rule"Controllo #1_ask"
+    dialect"mvel"
+    when
+        fmax: Max()
+        log: Logger()
+        output: CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")
+        df_bid: CurveStructure(
+            fl_input =="I",
+            cod_asset =="DEPO-FACILITY",
+            cod_type =="BID")
+        intesa_bid: CurveStructure(
+            fl_input =="I",
+            cod_asset =="INTESA01",
+            cod_type =="BID")
+        spiti3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")    
+        perc_blend_cc: CurveStructure(
+            fl_input =="I",
+            cod_asset =="PERC-BLEND-CC")
+        perc_blend_cd: CurveStructure(
+            fl_input =="I",
+            cod_asset =="PERC-BLEND-CD")
+        cartolare: CurveStructure(
+            fl_input =="I",
+            cod_asset =="CARTOLARE",
+            cod_type =="BID" )      
+             
+     
+    then
+      
+      OUT_list list = new OUT_list();
+      String tenor = "";
+      Double spread = null;
+      Double addon = 0.05;
+      
+      log.debug( "Controllo #1_ask")
+      log.debug( "TENOR\tCOD_TYPE\tDF_BID\tINTESA_BID\tDT_MATURITY\tCARTOLARE\tPERC_BLEND_CC\tPERC_BLEND_CD\tSPREAD")
+      tenor = "ON";
+      spread = fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor))+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+    
+      tenor = "TN";
+      spread = fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor))+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+     
+      tenor = "SN";
+      spread = fmax.value(df_bid.getValue(),intesa_bid.getBucket(tenor))+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t"+ df_bid.getValue()+"\t"+intesa_bid.getBucket(tenor)+"\t\t\t\t\t"+spread)
+     
+      tenor = "1W";
+      spread =  spiti3.getInterpolatedRate(output.getDtMaturity(tenor))+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t\t"+ output.getDtMaturity(tenor)+"\t\t\t\t"+spread)
+      
+      tenor = "2W";
+      spread =  spiti3.getInterpolatedRate(output.getDtMaturity(tenor))+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t\t"+ output.getDtMaturity(tenor)+"\t\t\t\t"+spread)
+   
+      tenor = "1M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "2M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "3M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "6M";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "9M";
+      spread = ((cartolare.getBucket("6M")+cartolare.getBucket("1Y"))/2d*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+(cartolare.getBucket("6M")+cartolare.getBucket("1Y"))/2d+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+      tenor = "1Y";
+      spread = (cartolare.getBucket(tenor)*perc_blend_cc.getValue()+intesa_bid.getBucket(tenor)*perc_blend_cd.getValue())/(perc_blend_cc.getValue()+perc_blend_cd.getValue())+addon;
+      spread = MathOperator.round(spread,2);
+      list.add(new OUT(output.getCod_asset(), output.getCod_type(), output.getCod_ccy(),spread, tenor, spread-output.getBucket(tenor), output.getSoglia(), output.getDtMaturity(tenor), output.getOrderNum(tenor)));
+      log.debug( tenor+"\t"+ output.getCod_type()+"\t\t"+intesa_bid.getBucket(tenor)+"\t\t"+ cartolare.getBucket(tenor)+"\t"+perc_blend_cc.getValue()+"\t"+perc_blend_cd.getValue()+"\t"+spread)
+      
+ 
+      insert(list)
+end  		
+
+
+	

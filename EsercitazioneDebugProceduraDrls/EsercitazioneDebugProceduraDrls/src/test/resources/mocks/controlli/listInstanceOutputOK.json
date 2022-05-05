@@ -1,0 +1,36 @@
+{
+  "request": {
+    "method": "GET"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": [
+      {
+        "controlloId": "3",
+        "instanceId": "2",
+        "nomeOutputData": "BD8yp6iv",
+        "tenor": "Ho",
+        "valoreDaControllare": "2.1",
+        "valoreCalcolato": "2.1",
+        "delta": "0.01",
+        "soglia": "0.02",
+        "stato": "OK"
+      },
+      {
+        "controlloId": "3",
+        "instanceId": "2",
+        "nomeOutputData": "xGSgq",
+        "tenor": "X5D",
+        "valoreDaControllare": "2.2",
+        "valoreCalcolato": "2.2",
+        "delta": "0.01",
+        "soglia": "0.02",
+        "stato": "OK"
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

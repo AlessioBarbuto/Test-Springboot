@@ -1,0 +1,115 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+
+
+rule"Controllo #9"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         comp_retail:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPRD-COMP-RETAIL")      
+         comp_fi:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPRD-COMP-FI") 
+         comp_noest:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPRD-COMP-NOEST")    
+  		 mn_liq_irs:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="MN-SPRD-LIQ-IRS-1M")  
+         tit_mlt:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="TIT-MLT") 
+         basis_1v3:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="BASIS-1v3-BBG")  
+
+                 
+    then
+    
+      OUT_list list = new OUT_list();
+      String[] tenorArray= {"1M","2M","3M","6M","9M","1Y","18M"};
+      Double spread = null;
+      Double spread1 = null;
+      Double spread2 = null;
+      String[] codTenor = tit_mlt.getCodTenor() ;
+      int len = codTenor.length;
+     
+      double[] tit1m = new double[len];
+      Data dtRif = tit_mlt.getAsOfDate();
+      
+ 	  log.debug("Controllo #9")
+	  log.debug("TENOR\tTYPE\tSPITI3 ASK\tOIS ASK\tOIS BID\tSOFR\tSPREAD")
+      
+
+      log.debug("DT_MATURITY\tRATE_CURVA_FIX\tBASIS\tyearlyDiscountFactor\tquarterlyDiscountFactor\tSPREAD");
+      
+      for(int i=0; i<len; i++){
+      		tit1m[i] = tit_mlt.getBucket(i)+basis_1v3.getBucket(i)/100d;
+      }
+      
+    
+      CurveStructure curvatit1m = new CurveStructure(tit_mlt.getBucketDates(), tit1m, codTenor, "CURVA-TIT1M", dtRif);
+      double mn_liq_irs18M = (curvatit1m.getBucket("2Y")+mn_liq_irs.getBucket("1Y"))/2;
+      CurveStructure curva_liq_irs18M = new CurveStructure(new Data[]{comp_fi.getDtMaturity("18M")}, new double[]{mn_liq_irs18M}, new String[]{"18M"}, "IRS-18M", dtRif);
+      CurveStructure tmpcurve = CurveStructure.mergeWithoutJson(curvatit1m,mn_liq_irs,"TMP_CURVE");
+      CurveStructure liqvs1m = CurveStructure.mergeWithoutJson(tmpcurve,curva_liq_irs18M,"LIQ-VS-1M");
+      liqvs1m.sort();
+      
+      log.debug(liqvs1m.toString());
+      
+      //〖SCRNF〗_t=(0,4*〖SPR1m〗_t+0,1*〖SPR1m〗_(t+1m)+0,5*〖SPR1m〗_(t+12m))-〖SPR1m〗_t
+      //〖SCINF〗_t=max{〖0,5*SPR1m〗_t+0,5*〖SPR1m〗_(t+12m)-〖SPR1m〗_t;〖SCRNF〗_t }
+      //〖SCRIF〗_t=0,9*〖SPR1m〗_t+0,1*〖SPR1m〗_(t+12m)-〖SPR1m〗_t
+      
+      String tenor = "";
+      for(int j=0; j<tenorArray.length; j++){
+	      tenor = tenorArray[j];
+	      spread = (0.4*liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor)) + 0.1 * liqvs1m.getInterpolatedRate(Data.getMeseTraslato(comp_fi.getDtMaturity(tenor),1))  + 0.5 * liqvs1m.getInterpolatedRate(Data.getMeseTraslato(comp_fi.getDtMaturity(tenor),12)) - liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor)));
+	      spread1 = Math.max((0.5*liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor)) + 0.5 * liqvs1m.getInterpolatedRate(Data.getMeseTraslato(comp_fi.getDtMaturity(tenor),12)) - liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor))),spread);
+	      spread2 = (0.9*liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor)) + 0.1 * liqvs1m.getInterpolatedRate(Data.getMeseTraslato(comp_fi.getDtMaturity(tenor),12)) - liqvs1m.getInterpolatedRate(comp_fi.getDtMaturity(tenor)));
+	      spread = MathOperator.round(spread,2);
+	      spread1 = MathOperator.round(spread1,2);
+	      spread2 = MathOperator.round(spread2,2);
+	      //log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spiti3_ASK.getBucket(tenor)+"\t"+sonia.getBucket(tenor)+"\t"+spread);
+	      list.add(new OUT(comp_noest.getCod_asset(), comp_noest.getCod_type(), comp_noest.getCod_ccy(),spread, tenor, MathOperator.round(spread-comp_noest.getBucket(tenor),2), comp_noest.getSoglia(), comp_noest.getDtMaturity(tenor), comp_noest.getOrderNum(tenor)));
+	      list.add(new OUT(comp_retail.getCod_asset(), comp_retail.getCod_type(), comp_retail.getCod_ccy(),spread1, tenor, MathOperator.round(spread1-comp_retail.getBucket(tenor),2), comp_retail.getSoglia(), comp_retail.getDtMaturity(tenor), comp_retail.getOrderNum(tenor)));
+	      list.add(new OUT(comp_fi.getCod_asset(), comp_fi.getCod_type(), comp_fi.getCod_ccy(),spread2, tenor, MathOperator.round(spread2-comp_fi.getBucket(tenor),2), comp_fi.getSoglia(), comp_fi.getDtMaturity(tenor), comp_fi.getOrderNum(tenor)));     	    
+	    
+      }
+  	  
+  	  insert(list)
+  	  
+end  
+
+ 
+
+

@@ -1,0 +1,12 @@
+{
+  "request": {
+    "method": "POST"
+  },
+  "response": {
+    "status": "200",
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

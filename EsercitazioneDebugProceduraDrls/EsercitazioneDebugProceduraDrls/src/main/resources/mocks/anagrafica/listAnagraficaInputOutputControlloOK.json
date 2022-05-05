@@ -1,0 +1,154 @@
+{
+  "request": {
+    "method": "GET"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": [
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      },
+      {
+        "DataFine": "string",
+        "auditData": {
+          "lastModifyTimestamp": "string",
+          "userId": "string",
+          "userName": "string",
+          "version": "string"
+        },
+        "canaleCurva": "string",
+        "ccy": "string",
+        "codPrimary": "string",
+        "controlloId": "string",
+        "dataInizio": "string",
+        "depth": 0,
+        "descrizione": "string",
+        "flagInput": "string",
+        "nomeCurva": "string",
+        "nota": "string",
+        "user": "string"
+      }
+    ],
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}

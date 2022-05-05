@@ -1,0 +1,34 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.*;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+
+global java.util.List list
+
+rule "Controllo #1"
+    dialect "mvel"
+    when
+        fmax: Max()
+        output: JsonRowObject(
+            flag_input == "O",
+            id_ctrl == "#1")
+        df_bid: JsonRowObject(
+            flag_input == "I",
+            COD_ASSET == "DEPO-FACILITY",
+            COD_TYPE == "BID",
+            COD_TENOR == output.getElement("COD_TENOR").getAsString())
+        intesa_bid: JsonRowObject(
+            flag_input == "I",
+            COD_ASSET == "INTESA01",
+            COD_TYPE == "BID",
+            COD_TENOR == output.getElement("COD_TENOR").getAsString())
+    then
+        insert( new OUT("output", output));
+        insert( new OUT("value", fmax.value(df_bid.getDouble("SPREAD_RATE"),intesa_bid.getDouble("SPREAD_RATE"))));
+end

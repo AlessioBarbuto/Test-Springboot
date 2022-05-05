@@ -1,0 +1,294 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+rule"Controllo #4_EUR"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+       
+         spiti3_BBG:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR-BBG",
+            cod_type =="ASK")        
+         output_spiti3:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="ASK")    
+	     spiti3_BBG_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-EUR-BBG",
+            cod_type =="BID")        
+         output_spiti3_BID:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-EUR",
+            cod_type =="BID")    
+
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double irsMid = 0
+      Double spread = null;
+ 	  
+ 	  log.debug("Controllo #4_EUR")
+	  log.debug("TENOR\tTYPE\tSPITI3 MX\tSPITI3 BBG")
+      
+      ArrayList buckets = output_spiti3.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3.getTenor(i)+"\t"+output_spiti3.getCod_type()+"\t"+output_spiti3.getBucket(i)+"\t"+spiti3_BBG.getBucket(i));
+      		list.add(new OUT(output_spiti3.getCod_asset(), output_spiti3.getCod_type(), output_spiti3.getCod_ccy(),output_spiti3.getBucket(i), output_spiti3.getTenor(i), spiti3_BBG.getBucket(i)-output_spiti3.getBucket(i), output_spiti3.getSoglia(), output_spiti3.getDtMaturity(i), output_spiti3.getOrderNum(i)));     	    
+      }
+      
+      buckets = output_spiti3_BID.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3_BID.getTenor(i)+"\t"+output_spiti3_BID.getCod_type()+"\t"+output_spiti3_BID.getBucket(i)+"\t"+spiti3_BBG_BID.getBucket(i));
+      		list.add(new OUT(output_spiti3_BID.getCod_asset(), output_spiti3_BID.getCod_type(), output_spiti3_BID.getCod_ccy(),output_spiti3_BID.getBucket(i), output_spiti3_BID.getTenor(i), spiti3_BBG_BID.getBucket(i)-output_spiti3_BID.getBucket(i), output_spiti3_BID.getSoglia(), output_spiti3_BID.getDtMaturity(i), output_spiti3_BID.getOrderNum(i)));     	    
+      }
+     
+   
+            
+  	  insert(list);
+  	  
+end  
+
+rule"Controllo #4_USD"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+       
+         spiti3_BBG:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-USD-BBG",
+            cod_type =="ASK")        
+         output_spiti3:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-USD",
+            cod_type =="ASK")    
+	     spiti3_BBG_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-USD-BBG",
+            cod_type =="BID")        
+         output_spiti3_BID:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-USD",
+            cod_type =="BID")    
+
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double irsMid = 0
+      Double spread = null;
+ 	  
+ 	  log.debug("Controllo #4_USD")
+	  log.debug("TENOR\tTYPE\tSPITI3 MX\tSPITI3 BBG")
+      
+      ArrayList buckets = output_spiti3.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3.getTenor(i)+"\t"+output_spiti3.getCod_type()+"\t"+output_spiti3.getBucket(i)+"\t"+spiti3_BBG.getBucket(i));
+      		list.add(new OUT(output_spiti3.getCod_asset(), output_spiti3.getCod_type(), output_spiti3.getCod_ccy(),output_spiti3.getBucket(i), output_spiti3.getTenor(i), spiti3_BBG.getBucket(i)-output_spiti3.getBucket(i), output_spiti3.getSoglia(), output_spiti3.getDtMaturity(i), output_spiti3.getOrderNum(i)));     	    
+      }
+      
+      buckets = output_spiti3_BID.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3_BID.getTenor(i)+"\t"+output_spiti3_BID.getCod_type()+"\t"+output_spiti3_BID.getBucket(i)+"\t"+spiti3_BBG_BID.getBucket(i));
+      		list.add(new OUT(output_spiti3_BID.getCod_asset(), output_spiti3_BID.getCod_type(), output_spiti3_BID.getCod_ccy(),output_spiti3_BID.getBucket(i), output_spiti3_BID.getTenor(i), spiti3_BBG_BID.getBucket(i)-output_spiti3_BID.getBucket(i), output_spiti3_BID.getSoglia(), output_spiti3_BID.getDtMaturity(i), output_spiti3_BID.getOrderNum(i)));     	    
+      }
+     
+   
+            
+  	  insert(list);
+  	  
+end  
+
+rule"Controllo #4_JPY"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+       
+         spiti3_BBG:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-JPY-BBG",
+            cod_type =="ASK")        
+         output_spiti3:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-JPY",
+            cod_type =="ASK")    
+	     spiti3_BBG_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-JPY-BBG",
+            cod_type =="BID")        
+         output_spiti3_BID:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-JPY",
+            cod_type =="BID")    
+
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double irsMid = 0
+      Double spread = null;
+ 	  
+ 	  log.debug("Controllo #4_JPY")
+	  log.debug("TENOR\tTYPE\tSPITI3 MX\tSPITI3 BBG")
+      
+      ArrayList buckets = output_spiti3.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		if(!output_spiti3.getTenor(i).equals("ON")){
+      			log.debug(output_spiti3.getTenor(i)+"\t"+output_spiti3.getCod_type()+"\t"+output_spiti3.getBucket(i)+"\t"+spiti3_BBG.getBucket(i-1));
+      			list.add(new OUT(output_spiti3.getCod_asset(), output_spiti3.getCod_type(), output_spiti3.getCod_ccy(),output_spiti3.getBucket(i), output_spiti3.getTenor(i), spiti3_BBG.getBucket(i-1)-output_spiti3.getBucket(i), output_spiti3.getSoglia(), output_spiti3.getDtMaturity(i), output_spiti3.getOrderNum(i)));
+      		}     	    
+      }
+      
+      buckets = output_spiti3_BID.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+	      	if(!output_spiti3_BID.getTenor(i).equals("ON")){
+	      		log.debug(output_spiti3_BID.getTenor(i)+"\t"+output_spiti3_BID.getCod_type()+"\t"+output_spiti3_BID.getBucket(i)+"\t"+spiti3_BBG_BID.getBucket(i-1));
+	      		list.add(new OUT(output_spiti3_BID.getCod_asset(), output_spiti3_BID.getCod_type(), output_spiti3_BID.getCod_ccy(),output_spiti3_BID.getBucket(i), output_spiti3_BID.getTenor(i), spiti3_BBG_BID.getBucket(i-1)-output_spiti3_BID.getBucket(i), output_spiti3_BID.getSoglia(), output_spiti3_BID.getDtMaturity(i), output_spiti3_BID.getOrderNum(i)));
+	      	}     	    
+      }
+     
+   
+            
+  	  insert(list)
+  	  
+end  
+
+rule"Controllo #4_CHF"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+       
+         spiti3_BBG:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-CHF-BBG",
+            cod_type =="ASK")        
+         output_spiti3:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-CHF",
+            cod_type =="ASK")    
+	     spiti3_BBG_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-CHF-BBG",
+            cod_type =="BID")        
+         output_spiti3_BID:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-CHF",
+            cod_type =="BID")    
+
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double irsMid = 0
+      Double spread = null;
+ 	  
+ 	  log.debug("Controllo #4_CHF")
+	  log.debug("TENOR\tTYPE\tSPITI3 MX\tSPITI3 BBG")
+      
+      ArrayList buckets = output_spiti3.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		if(!output_spiti3.getTenor(i).equals("ON")){
+      			log.debug(output_spiti3.getTenor(i)+"\t"+output_spiti3.getCod_type()+"\t"+output_spiti3.getBucket(i)+"\t"+spiti3_BBG.getBucket(i-1));
+      			list.add(new OUT(output_spiti3.getCod_asset(), output_spiti3.getCod_type(), output_spiti3.getCod_ccy(),output_spiti3.getBucket(i), output_spiti3.getTenor(i), spiti3_BBG.getBucket(i-1)-output_spiti3.getBucket(i), output_spiti3.getSoglia(), output_spiti3.getDtMaturity(i), output_spiti3.getOrderNum(i)));
+      		}     	    
+      }
+      
+      buckets = output_spiti3_BID.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		if(!output_spiti3_BID.getTenor(i).equals("ON")){
+      			log.debug(output_spiti3_BID.getTenor(i)+"\t"+output_spiti3_BID.getCod_type()+"\t"+output_spiti3_BID.getBucket(i)+"\t"+spiti3_BBG_BID.getBucket(i-1));
+      			list.add(new OUT(output_spiti3_BID.getCod_asset(), output_spiti3_BID.getCod_type(), output_spiti3_BID.getCod_ccy(),output_spiti3_BID.getBucket(i), output_spiti3_BID.getTenor(i), spiti3_BBG_BID.getBucket(i-1)-output_spiti3_BID.getBucket(i), output_spiti3_BID.getSoglia(), output_spiti3_BID.getDtMaturity(i), output_spiti3_BID.getOrderNum(i)));
+      		}     	    
+      }
+     
+   
+            
+  	  insert(list)
+  	  
+end  
+
+
+rule"Controllo #4_GBP"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+       
+         spiti3_BBG:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-GBP-BBG",
+            cod_type =="ASK")        
+         output_spiti3:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-GBP",
+            cod_type =="ASK")    
+	     spiti3_BBG_BID:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-GBP-BBG",
+            cod_type =="BID")        
+         output_spiti3_BID:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="SPITI3-GBP",
+            cod_type =="BID")    
+
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor=""
+      Double irsMid = 0
+      Double spread = null;
+ 	  
+ 	  log.debug("Controllo #4_GBP")
+	  log.debug("TENOR\tTYPE\tSPITI3 MX\tSPITI3 BBG")
+      
+      ArrayList buckets = output_spiti3.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3.getTenor(i)+"\t"+output_spiti3.getCod_type()+"\t"+output_spiti3.getBucket(i)+"\t"+spiti3_BBG.getBucket(i));
+      		list.add(new OUT(output_spiti3.getCod_asset(), output_spiti3.getCod_type(), output_spiti3.getCod_ccy(),output_spiti3.getBucket(i), output_spiti3.getTenor(i), spiti3_BBG.getBucket(i)-output_spiti3.getBucket(i), output_spiti3.getSoglia(), output_spiti3.getDtMaturity(i), output_spiti3.getOrderNum(i)));     	    
+      }
+      
+      buckets = output_spiti3_BID.getBucketsList();
+      for(int i = 0; i<buckets.size(); i++){
+      		log.debug(output_spiti3_BID.getTenor(i)+"\t"+output_spiti3_BID.getCod_type()+"\t"+output_spiti3_BID.getBucket(i)+"\t"+spiti3_BBG_BID.getBucket(i));
+      		list.add(new OUT(output_spiti3_BID.getCod_asset(), output_spiti3_BID.getCod_type(), output_spiti3_BID.getCod_ccy(),output_spiti3_BID.getBucket(i), output_spiti3_BID.getTenor(i), spiti3_BBG_BID.getBucket(i)-output_spiti3_BID.getBucket(i), output_spiti3_BID.getSoglia(), output_spiti3_BID.getDtMaturity(i), output_spiti3_BID.getOrderNum(i)));     	    
+      }
+     
+   
+            
+  	  insert(list)
+  	  
+end  
+

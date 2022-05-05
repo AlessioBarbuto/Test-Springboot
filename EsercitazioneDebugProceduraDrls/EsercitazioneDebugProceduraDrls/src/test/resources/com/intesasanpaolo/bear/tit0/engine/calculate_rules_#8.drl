@@ -1,0 +1,102 @@
+package com.intesasanpaolo.bear.tit0.engine;
+
+import com.intesasanpaolo.bear.tit0.engine.*;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonRowObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.JsonTableObject;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.ZeroTermStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.json.structure.CurveStructure;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.IN;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT_list;
+import com.intesasanpaolo.bear.tit0.engine.model.drools.OUT;
+import com.intesasanpaolo.bear.tit0.engine.utils.MathOperator;
+import org.apache.commons.math3.analysis.function.Max;
+import org.kie.api.builder.*;
+import org.kie.api.runtime.*;
+import com.google.gson.*;
+import java.util.*
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import com.intesasanpaolo.bear.tit0.engine.utils.*;
+import org.slf4j.Logger;
+
+global java.util.HashMap myMap
+
+ 
+
+rule"Controllo #8"
+    dialect"mvel"
+    when
+        
+        dayCounter: DayCounter()
+        log: Logger()
+
+
+         sonia:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SONIA-MONTH-BBG")      
+         spiti3_ASK:  CurveStructure(
+            fl_input =="I",
+            cod_asset =="SPITI3-GBP",
+            cod_type =="ASK") 
+  		 mn_liq_sonia:  CurveStructure(
+            fl_input =="O",
+            cod_asset =="MN-SPRD-LIQ-SONIA")  
+      
+
+                  
+    then
+    
+      OUT_list list = new OUT_list();
+      String tenor="";
+      Double spread = null;
+      Double spread_3M = null;
+      Double spread_13M = null;
+      
+
+ 	  log.debug("Controllo #8")
+	  log.debug("TENOR\tTYPE\tSPITI3 ASK\tSONIA\tSPREAD")
+      
+    
+      
+      tenor = "3M"
+      spread = spiti3_ASK.getBucket(tenor)-sonia.getBucket(tenor)
+      spread_3M = spread;
+      spread = MathOperator.round(spread,2)
+      log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spiti3_ASK.getBucket(tenor)+"\t"+sonia.getBucket(tenor)+"\t"+spread)
+      list.add(new OUT(mn_liq_sonia.getCod_asset(), mn_liq_sonia.getCod_type(), mn_liq_sonia.getCod_ccy(),spread, tenor, spread-mn_liq_sonia.getBucket(tenor), mn_liq_sonia.getSoglia(), mn_liq_sonia.getDtMaturity(tenor), mn_liq_sonia.getOrderNum(tenor)));     	    
+      
+      tenor = "1Y"
+      spread = spiti3_ASK.getBucket(tenor)-sonia.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spiti3_ASK.getBucket(tenor)+"\t"+sonia.getBucket(tenor)+"\t"+spread)
+      list.add(new OUT(mn_liq_sonia.getCod_asset(), mn_liq_sonia.getCod_type(), mn_liq_sonia.getCod_ccy(),spread, tenor, spread-mn_liq_sonia.getBucket(tenor), mn_liq_sonia.getSoglia(), mn_liq_sonia.getDtMaturity(tenor), mn_liq_sonia.getOrderNum(tenor)));
+      
+       
+      tenor = "13M"
+      spread = spiti3_ASK.getInterpolatedRate(mn_liq_sonia.getDtMaturity(tenor))-sonia.getInterpolatedRate(mn_liq_sonia.getDtMaturity(tenor))
+      spread_13M = spread;
+      spread = MathOperator.round(spread,2)
+      log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spiti3_ASK.getInterpolatedRate(mn_liq_sonia.getDtMaturity(tenor))+"\t"+sonia.getInterpolatedRate(mn_liq_sonia.getDtMaturity(tenor))+"\t"+spread)
+      list.add(new OUT(mn_liq_sonia.getCod_asset(), mn_liq_sonia.getCod_type(), mn_liq_sonia.getCod_ccy(),spread, tenor, spread-mn_liq_sonia.getBucket(tenor), mn_liq_sonia.getSoglia(), mn_liq_sonia.getDtMaturity(tenor), mn_liq_sonia.getOrderNum(tenor)));     	    
+      
+      
+      tenor = "3-13M"
+      spread = (spread_3M-spread_13M)/2.d;
+      spread = MathOperator.round(spread,2)
+      log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spread_3M+"\t"+spread_13M+"\t"+spread)
+      list.add(new OUT(mn_liq_sonia.getCod_asset(), mn_liq_sonia.getCod_type(), mn_liq_sonia.getCod_ccy(),spread, tenor, spread-mn_liq_sonia.getBucket(tenor), mn_liq_sonia.getSoglia(), mn_liq_sonia.getDtMaturity(tenor), mn_liq_sonia.getOrderNum(tenor)));     	    
+    
+    
+      tenor = "18M"
+      spread = spiti3_ASK.getBucket(tenor)-sonia.getBucket(tenor)
+      spread = MathOperator.round(spread,2)
+      log.debug(tenor+"\t"+mn_liq_sonia.getCod_type()+"\t"+spiti3_ASK.getBucket(tenor)+"\t"+sonia.getBucket(tenor)+"\t"+spread)
+      list.add(new OUT(mn_liq_sonia.getCod_asset(), mn_liq_sonia.getCod_type(), mn_liq_sonia.getCod_ccy(),spread, tenor, spread-mn_liq_sonia.getBucket(tenor), mn_liq_sonia.getSoglia(), mn_liq_sonia.getDtMaturity(tenor), mn_liq_sonia.getOrderNum(tenor)));    
+      
+     
+      
+            
+  	  insert(list)
+  	  
+end  

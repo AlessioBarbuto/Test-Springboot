@@ -1,0 +1,57 @@
+{
+  "request": {
+    "method": "PUT"
+  },
+  "response": {
+    "status": "200",
+    "jsonBody": {
+      "nomeCurva": "TEST",
+      "dataEsecuzione": "2021-10-30",
+      "oraEsecuzione": "11:00",
+      "canaleCurva":"MANUALE",
+      "auditData": {
+        "version": "1",
+        "userId": "Mr8FB",
+        "userName": "kdJxA",
+        "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+      },
+      "curvaRecordList": [
+        {
+          "ccy": "EUR",
+          "type": "ASK",
+          "tenor": "0",
+          "rate": "2.25",
+          "order": "0",
+            "dtMaturity": "2021-01-23",
+             "date": "2021-01-23",
+          "auditData": {
+            "version": "1",
+            "userId": "qFslL",
+            "userName": "OtgVgsgWuYvWlrNA",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        },
+        {
+          "ccy": "EUR",
+          "type": "BID",
+          "tenor": "0",
+          "rate": "2.66",
+          "order": "0",
+           "dtMaturity": "2021-01-23",
+            "date": "2021-01-23",
+          "auditData": {
+            "version": "1",
+            "userId": "MUeW7",
+            "userName": "M2jyeUNAgqZ180J",
+            "lastModifyTimestamp": "2021-12-31T07:45:00Z"
+          }
+        }
+        
+      ]
+    },
+    "headers": {
+      "Content-Type": "application/json",
+      "Bear-ID": "11111-2222-33333"
+    }
+  }
+}
