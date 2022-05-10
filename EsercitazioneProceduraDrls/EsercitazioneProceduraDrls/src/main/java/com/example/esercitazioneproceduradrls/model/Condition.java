@@ -14,7 +14,7 @@ import java.io.Serializable;
 public class Condition implements Serializable {
 
     private String name;
-    private String functionName;
+    //private String functionName;
     private Function function;
 
 }
