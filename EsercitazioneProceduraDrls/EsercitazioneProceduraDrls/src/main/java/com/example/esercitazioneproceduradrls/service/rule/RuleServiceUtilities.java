@@ -1,20 +1,24 @@
 package com.example.esercitazioneproceduradrls.service.rule;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.InputStream;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import com.example.esercitazioneproceduradrls.model.Rule;
+import com.google.gson.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 import org.yaml.snakeyaml.Yaml;
-
-import java.io.InputStream;
-import java.util.Map;
 
 public class RuleServiceUtilities {
 
     private JsonObject yamlStructure = null;
 
-    //Struttura della regola
     static public String control_template =
             "package com.pwc.innovate; \n" +
                     "\n" +
@@ -37,55 +41,44 @@ public class RuleServiceUtilities {
                     "\n"+
                     "end\n";
 
-    static public String vMANUAL= "manual";
-    static public  String vNA = "none";
+    static public String MANUAL = "manual";
+    static public  String NA = "none";
 
-    static public  String vLIST_VALUE = "list_by_value";
-    static public  String vLIST_TYPE = "list_by_type";
-    static public  String vFREETEXT = "free_text";
-    static public  String vCALCTEXT = "calc_text";
-
-
+    static public  String LIST_VALUE = "list_by_value";
+    static public  String LIST_TYPE = "list_by_type";
+    static public  String FREETEXT = "free_text";
+    static public  String CALCTEXT = "calc_text";
 
     /**
-     *  Map a Yml file into a "String, Object" map, then transforms it into a Json Object and print it
+     * Costructor method that when inizialized create a json object starting from a yaml file.
      */
-    public void init() {
-
-        Map<String, Object> obj = getMapFromYaml("buildingblock.yaml");
-        getJsonFromMap(obj);
+    public RuleServiceUtilities(){
+        Map<String, Object> obj = mapObjectFromYml();
+        createJsonObjectFromMap(obj);
         System.out.println(obj);
     }
 
     /**
-     * Given an input "String, Object" map, return a Json Object
+     * create a Json Object from a "String, Object" map
      * @param obj
      */
-    private void getJsonFromMap(Map<String, Object> obj) {
+    private void createJsonObjectFromMap(Map<String, Object> obj) {
         Gson gson = new Gson();
         this.yamlStructure = gson.toJsonTree(obj).getAsJsonObject();
     }
 
     /**
-     * Given an input yaml file, it is processed and mapped into a "String, Object" map
-     * @param yamlFileName
+     * Given an input .yml file, returns a map of objects.
      * @return
      */
-    private Map<String, Object> getMapFromYaml(String yamlFileName) {
-
+    private Map<String, Object> mapObjectFromYml() {
         Yaml yaml = new Yaml();
-        InputStream inputStream = null;
-
-        try {
-            inputStream = this.getClass()
-                    .getClassLoader()
-                    .getResourceAsStream(yamlFileName);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return yaml.load(inputStream);
+        InputStream inputStream = this.getClass()
+                .getClassLoader()
+                .getResourceAsStream("buildingblock.yaml");
+        Map<String, Object> obj = yaml.load(inputStream);
+        return obj;
     }
-
 
     public JsonObject getYamlStructure() {
         return yamlStructure;
@@ -109,20 +102,10 @@ public class RuleServiceUtilities {
         return null;
     }
 
-    /**
-     * TODO: Verificare dove si usa
-     * @param value
-     * @return
-     */
     public String generateFromCalcManual(String value) {
         return value;
     }
 
-    /**
-     * TODO: Verificare dove si usa
-     * @param value
-     * @return
-     */
     public String generateOutputManual(String value) {
 
         String returnValue = value;
@@ -197,11 +180,6 @@ public class RuleServiceUtilities {
 
     }
 
-    /**
-     * Prende in ingresso una stringa e gli concatena all'inizio ed alla fine uno "\"
-     * @param value
-     * @return
-     */
     public String quotestring(String value) {
         String returnValue = "";
 
@@ -212,56 +190,25 @@ public class RuleServiceUtilities {
         return returnValue;
     }
 
-    /**
-     * Prende in ingeresso una stringa e la splitta in ogni ".", se
-     * @param value
-     * @return
-     */
     public String generateManual(String value) {
         String returnValue = "";
         String[] words = value.split(".");
 
-        if (checkWordsEqualsToNumber(words, 3)) {
-            if (isEqual(words[2], "d")) {
-                return buildString(words);
+        if (words.length == 3) {
+            if (words[2].equals("d")) {
+                returnValue = words[0];
+                returnValue = returnValue.concat(".getDouble(\"");
+                returnValue = returnValue.concat(words[1]);
+                returnValue = returnValue.concat("\")");
+
+                return returnValue;
             }
         }
         return "unknown";
 
     }
 
-    /**
-     * take the first element of an array of Strings and concat other Strings
-     * @param words
-     * @return
-     */
-    private String buildString(String[] words) {
-        String returnValue;
-        returnValue = words[0];
-        returnValue = returnValue.concat(".getDouble(\"");
-        returnValue = returnValue.concat(words[1]);
-        returnValue = returnValue.concat("\")");
 
-        return returnValue;
-    }
-
-    /**
-     * Check if the word equals to another Specified
-     * @param word
-     * @return
-     */
-    private boolean isEqual(String word, String c) {
-        return word.equals(c);
-    }
-
-    /**
-     * Check if the lenght of the array is equals to number
-     * @param words
-     * @return
-     */
-    private boolean checkWordsEqualsToNumber(String[] words, Integer number) {
-        return words.length == number;
-    }
 
 
 }

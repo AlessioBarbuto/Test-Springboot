@@ -1,0 +1,27 @@
+package KieRule;
+import com.example.casinodrools.entity.CasinoBarOrder
+import java.util.Arrays
+import java.time.LocalDateTime;
+
+function void increasePrice(CasinoBarOrder order){
+String[] highSeason = {"Christmas", "Easter", "Summer"};
+order.setTime(LocalDateTime.now());
+
+//increase the price in holidays
+if (Arrays.asList(highSeason).contains(order.getPeriod())){
+    order.setPrice(order.getPrice()+1);
+}
+//increase the price by one if is weekend
+if (order.getTime().getDayOfWeek().getValue() > 5){
+    order.setPrice(order.getPrice()+1);
+}
+}
+
+rule "water"
+
+when
+itemSold : CasinoBarOrder(item=="wine" || item=="beer" || item=="drink");
+then
+increasePrice(itemSold);
+end;
+

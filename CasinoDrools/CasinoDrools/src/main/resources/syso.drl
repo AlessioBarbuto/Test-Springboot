@@ -1,0 +1,14 @@
+package KieRule;
+import com.example.casinodrools.entity.RouletteSpin;
+
+function void prova(RouletteSpin spinObject){
+spinObject.setProbability(1000);
+}
+
+rule "prova function"
+
+when
+spinObject : RouletteSpin(bet=="mille");
+then
+prova(spinObject);
+end;

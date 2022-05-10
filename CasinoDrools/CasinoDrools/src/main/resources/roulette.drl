@@ -1,0 +1,26 @@
+package KieRule;
+import com.example.casinodrools.entity.RouletteSpin;
+
+rule "Dozen"
+
+when
+spinObject : RouletteSpin(bet=="Dozen");
+then
+spinObject.setProbability(32);
+end;
+
+rule "Classic number"
+
+when
+spinObject : RouletteSpin(bet=="number");
+then
+spinObject.setProbability(3);
+end;
+
+rule "color"
+
+when
+spinObject : RouletteSpin(bet=="color");
+then
+spinObject.setProbability(48);
+end;
