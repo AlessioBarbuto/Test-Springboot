@@ -1,5 +1,6 @@
 package com.example.esercitazioneproceduradrls.service.rule;
 
+import com.example.esercitazioneproceduradrls.model.Function;
 import com.example.esercitazioneproceduradrls.model.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,6 +9,8 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -22,13 +25,18 @@ public class PutControlServiceRefactored {
   * @param rules
   * @return
   */
- public Rule run(String id, String type, List<Rule> rules){
+ public String run(String id, String type, List<Rule> rules){
 
   rules.forEach(el ->log.info("regola: "+ el.toString()));
-  //rules.forEach(this::createRule);
+  List<List<String>> stringRule = rules.stream()
+          .map(this::createRule)
+          .collect(Collectors.toList());
 
-  return null;
+  log.info("Regola in Stringhe: "+stringRule.toString());
 
+  String result = stringRule.toString();
+
+  return result;
  }
 
 
@@ -75,17 +83,11 @@ public class PutControlServiceRefactored {
   */
  public List<String> makeWhen(Rule rule){
   log.info("started execute when");
-
-  /*List<Function> whenConditions = rule.getWhen().stream()
-          .map(Condition::getFunction)
+  List<String> when = rule.getWhen().stream()
+          .map(this::buildFunction)
           .collect(Collectors.toList());
 
-  List<String> conditions = whenConditions.stream()
-          .map(condition -> condition.getName().concat(condition.getOperator()).concat(condition.getExpression()))
-          .collect(Collectors.toList());
-
-  return conditions;*/
-  return null;
+  return when;
  }
 
 
@@ -95,11 +97,37 @@ public class PutControlServiceRefactored {
   * @param rule
   * @return
   */
-  public List<String> makeThen(Rule rule){
+ public List<String> makeThen(Rule rule){
   log.info("started execute then");
+  List<String> then = rule.getThen().stream()
+          .filter(Objects::nonNull)
+          .map(expression -> ruleService.buildExpression(expression))
+          .collect(Collectors.toList());
 
-  return null;
+  return then;
  }
+
+
+ /**
+  * Assembly the function -> name, operator, functionName(conditions)
+  * @param function
+  * @return
+  */
+ public String buildFunction(Function function){
+
+  List<String> conditions = function.getConditions().stream()
+          .filter(Objects::nonNull)
+          .map(condition -> ruleService.buildCondition(condition))
+          .collect(Collectors.toList());
+
+  String stringFunction = function.getName()+" "
+          +function.getOperator()+" "
+          +function.getFunctionName()+"("+conditions.toString()+")";
+
+  return stringFunction;
+ }
+
+
 
  /**
   * method that execute the creation of rule parts, that are returned as Lists concatenated
@@ -123,7 +151,7 @@ public class PutControlServiceRefactored {
   * @return
   */
  private List<String> concatLists(List<String> importList, String ruleName, String dialect, List<String> whenList, List<String> thenList) {
-  List<String> newList = new ArrayList<String>();
+  List<String> newList = new ArrayList<>();
   newList.addAll(importList);
   newList.add(ruleName);
   newList.add(dialect);

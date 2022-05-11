@@ -1,16 +1,17 @@
 package com.example.esercitazioneproceduradrls.service.rule;
 
+
+import com.example.esercitazioneproceduradrls.model.Condition;
+import com.example.esercitazioneproceduradrls.model.Expression;
+import com.example.esercitazioneproceduradrls.model.Function;
 import com.example.esercitazioneproceduradrls.model.Rule;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
 class PutControlServiceRefactoredTest {
@@ -41,7 +42,30 @@ class PutControlServiceRefactoredTest {
 
     }
 
+
     @Test
-    void setDialectTest() {
+    void makeWhenTest() {
+        Rule rule = new Rule();
+        List<Condition> conditions = List.of(new Condition("nome","==","espressione"),
+                new Condition("nome","==","espressione"));
+        List<Function> when = List.of(new Function("nome",":","nomeFunzione",conditions));
+        rule.setWhen(when);
+
+        String result = "nome : nomeFunzione(nome == espressione)";
+        log.info("result: "+result);
+
+        Assertions.assertEquals(result, controlService.makeWhen(rule).toString());
+    }
+
+    @Test
+    void makeThenTest() {
+        Rule rule = new Rule();
+        List<Expression> then = List.of(new Expression("tipo","nome","==", "espressione"));
+        rule.setThen(then);
+
+        String result = "tipo nome == espressione";
+        log.info("result: "+result);
+
+        Assertions.assertEquals(result, controlService.makeThen(rule).toString());
     }
 }

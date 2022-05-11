@@ -26,7 +26,7 @@ public class PutControlCommand {
         this.rules = rules;
     }
 
-    public Rule execute() throws Exception {
+    public String execute() throws Exception {
         return putControlService.run(id, type, rules);
     }
 }

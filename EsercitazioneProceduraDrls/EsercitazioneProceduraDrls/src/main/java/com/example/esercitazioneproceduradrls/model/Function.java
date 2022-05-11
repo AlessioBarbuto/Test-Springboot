@@ -17,6 +17,6 @@ public class Function implements Serializable {
     private String name;
     private String operator;
     private String functionName;
-    private List<Condition> condition;
+    private List<Condition> conditions;
 
 }

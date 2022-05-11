@@ -38,7 +38,7 @@ public class RulesController {
      */
     @PutMapping("/simulator/putControl")
     @ApiOperation(value = "Ottiene i blocchi di un tipo")
-    public ResponseEntity<Rule> generateDrl(
+    public ResponseEntity<String> generateDrl(
             @Valid @RequestBody List<Rule> rules,
             @RequestParam String id,
             @RequestParam String type
