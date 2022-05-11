@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -15,6 +16,7 @@ public class Function implements Serializable {
 
     private String name;
     private String operator;
-    private String expression;
+    private String functionName;
+    private List<Condition> condition;
 
 }

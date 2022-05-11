@@ -16,7 +16,7 @@ public class Rule implements Serializable {
 
     private String name;
     private String dialect;
-    private List<Condition> when;
+    private List<Function> when;
     private List<Expression> then;
     //private List<Variable> variables;
     //private List<Expression> expressions;

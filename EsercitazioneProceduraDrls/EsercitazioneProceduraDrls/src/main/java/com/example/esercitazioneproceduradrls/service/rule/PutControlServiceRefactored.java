@@ -1,17 +1,13 @@
 package com.example.esercitazioneproceduradrls.service.rule;
 
-import com.example.esercitazioneproceduradrls.model.Condition;
-import com.example.esercitazioneproceduradrls.model.Function;
 import com.example.esercitazioneproceduradrls.model.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 
 @Service
@@ -28,7 +24,7 @@ public class PutControlServiceRefactored {
   */
  public Rule run(String id, String type, List<Rule> rules){
 
-  //rules.forEach(el ->log.info("regola: "+ el.toString()));
+  rules.forEach(el ->log.info("regola: "+ el.toString()));
   //rules.forEach(this::createRule);
 
   return null;
@@ -64,10 +60,10 @@ public class PutControlServiceRefactored {
   */
  public String setDialect(Rule rule){
   log.info("started set dialect");
-  String ruleDialect = "dialect: \""+rule.getDialect()+"\"";
-  ruleService.addTabulationOrNewLine(ruleDialect, 1, "\n");
+  String dialect = "dialect: \""+rule.getDialect()+"\"";
+  ruleService.addTabulationOrNewLine(dialect, 1, "\n");
 
-  return ruleDialect;
+  return dialect;
  }
 
 
@@ -80,7 +76,7 @@ public class PutControlServiceRefactored {
  public List<String> makeWhen(Rule rule){
   log.info("started execute when");
 
-  List<Function> whenConditions = rule.getWhen().stream()
+  /*List<Function> whenConditions = rule.getWhen().stream()
           .map(Condition::getFunction)
           .collect(Collectors.toList());
 
@@ -88,7 +84,8 @@ public class PutControlServiceRefactored {
           .map(condition -> condition.getName().concat(condition.getOperator()).concat(condition.getExpression()))
           .collect(Collectors.toList());
 
-  return conditions;
+  return conditions;*/
+  return null;
  }
 
 
