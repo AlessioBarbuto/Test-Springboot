@@ -19,4 +19,22 @@ public class Function implements Serializable {
     private String functionName;
     private List<Condition> conditions;
 
+    @Override
+    public String toString() {
+        String str = "";
+        if(name != null){
+            str = str.concat(name);
+        }
+        if(operator != null){
+            str = str.concat(operator);
+        }
+        if(functionName != null){
+            str = str.concat(functionName);
+        }
+        if(conditions != null){
+            str = str.concat(conditions.toString());
+        }
+        return str;
+    }
+
 }

@@ -15,6 +15,21 @@ public class Condition implements Serializable {
 
     private String name;
     private String operator;
-    private String expression;
+    private Function function;
 
+    @Override
+    public String toString() {
+        String str = "(";
+        if(name != null){
+            str = str.concat(name);
+        }
+        if(operator != null){
+            str = str.concat(operator);
+        }
+        if(function != null){
+            str = str.concat(function.toString());
+        }
+        str = str.concat(")");
+        return str;
+    }
 }

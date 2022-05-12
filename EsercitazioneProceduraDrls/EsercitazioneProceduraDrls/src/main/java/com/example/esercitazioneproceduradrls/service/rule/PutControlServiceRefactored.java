@@ -1,12 +1,10 @@
 package com.example.esercitazioneproceduradrls.service.rule;
 
-import com.example.esercitazioneproceduradrls.model.Function;
 import com.example.esercitazioneproceduradrls.model.Rule;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -65,7 +63,7 @@ public class PutControlServiceRefactored {
  /**
   * Given a Json file, extract "dialect" parameter and set the dialect of the rule
   */
- public String setDialect(Rule rule){
+ public String makeDialect(Rule rule){
   log.info("executing dialect");
   String dialect = "dialect: \""+rule.getDialect()+"\"";
   ruleService.addTabulationOrNewLine(dialect, 1, "\\n");
@@ -83,7 +81,7 @@ public class PutControlServiceRefactored {
  public List<String> makeWhen(Rule rule){
   log.info("executing when");
   List<String> when = rule.getWhen().stream()
-          .map(this::buildFunction)
+          .map(function -> ruleService.buildFunction(function))
           .collect(Collectors.toList());
 
   return when;
@@ -108,28 +106,6 @@ public class PutControlServiceRefactored {
 
 
  /**
-  * Assembly the function -> name, operator, functionName(conditions)
-  * @param function
-  * @return
-  */
- public String buildFunction(Function function){
-
-  List<String> conditions = function.getConditions().stream()
-          .filter(Objects::nonNull)
-          .map(condition -> ruleService.buildCondition(condition))
-          .collect(Collectors.toList());
-
-  String stringFunction = function.getName()+" "
-          +function.getOperator()+" "
-          +function.getFunctionName()+"("+conditions.toString()+")";
-  ruleService.addTabulationOrNewLine(stringFunction, 1, "\\n");
-
-  return stringFunction;
- }
-
-
-
- /**
   * method that execute the creation of rule parts, that are returned as Lists concatenated
   * @param rule
   * @return
@@ -138,27 +114,14 @@ public class PutControlServiceRefactored {
 
   List<String> importList = makeImports();
   String ruleName = makeRule(rule);
-  String dialect = setDialect(rule);
+  String dialect = makeDialect(rule);
   List<String> whenList = makeWhen(rule);
   List<String> thenList = makeThen(rule);
 
-  List<String> newList = concatLists(importList, ruleName, dialect, whenList, thenList);
+  List<String> newList = ruleService.concatLists(importList, ruleName, dialect, whenList, thenList);
   return newList;
  }
 
-
- /**Given many input lists, execute a concatenation
-  * @return
-  */
- private List<String> concatLists(List<String> importList, String ruleName, String dialect, List<String> whenList, List<String> thenList) {
-  List<String> newList = new ArrayList<>();
-  newList.addAll(importList);
-  newList.add(ruleName);
-  newList.add(dialect);
-  newList.addAll(whenList);
-  newList.addAll(thenList);
-  return newList;
- }
 
  /**
   * Function that eliminates brackets from a string

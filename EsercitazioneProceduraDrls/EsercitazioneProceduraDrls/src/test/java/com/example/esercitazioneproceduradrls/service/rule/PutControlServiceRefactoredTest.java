@@ -47,8 +47,8 @@ class PutControlServiceRefactoredTest {
     void makeWhenTest() {
         //given
         Rule rule = new Rule();
-        List<Condition> conditions = List.of(new Condition("nome","==","espressione"),
-                new Condition("nome","==","espressione"));
+        List<Condition> conditions = List.of(new Condition("nome","==",
+                new Function("espressione","","",null)));
         List<Function> when = List.of(new Function("nome",":","nomeFunzione",conditions));
 
         //when
