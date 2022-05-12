@@ -45,15 +45,18 @@ class PutControlServiceRefactoredTest {
 
     @Test
     void makeWhenTest() {
+        //given
         Rule rule = new Rule();
         List<Condition> conditions = List.of(new Condition("nome","==","espressione"),
                 new Condition("nome","==","espressione"));
         List<Function> when = List.of(new Function("nome",":","nomeFunzione",conditions));
-        rule.setWhen(when);
 
+        //when
+        rule.setWhen(when);
         String result = "nome : nomeFunzione(nome == espressione)";
         log.info("result: "+result);
 
+        //then
         Assertions.assertEquals(result, controlService.makeWhen(rule).toString());
     }
 

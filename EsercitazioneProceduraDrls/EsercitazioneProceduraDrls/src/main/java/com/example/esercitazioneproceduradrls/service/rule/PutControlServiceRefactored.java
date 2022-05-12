@@ -33,8 +33,7 @@ public class PutControlServiceRefactored {
           .collect(Collectors.toList());
 
   log.info("Regola in Stringhe: "+stringRule.toString());
-
-  String result = stringRule.toString();
+  String result = removeBrackets.apply(stringRule.toString());
 
   return result;
  }
@@ -44,7 +43,7 @@ public class PutControlServiceRefactored {
   * Given a Json file, extract "import" parameters and write imports in the rule
   */
  public List<String> makeImports(){
-  log.info("started make imports");
+  log.info("executing imports");
   List<String> importList = Arrays.asList("import org.pwc.innovate.drools_4_tit.*;","import org.pwc.innovate.drools_4_tit.*;");
 
   return importList;
@@ -55,9 +54,9 @@ public class PutControlServiceRefactored {
   * Given a Json file, extract "rule" parameters and give a name to the rule
   */
  public String makeRule(Rule rule){
-  log.info("started make rule");
+  log.info("executing rule");
   String ruleName = "rule: \""+rule.getName()+"\"";
-  ruleService.addTabulationOrNewLine(ruleName, 1, "\n");
+  ruleService.addTabulationOrNewLine(ruleName, 1, "\\n");
 
   return ruleName;
   }
@@ -67,9 +66,9 @@ public class PutControlServiceRefactored {
   * Given a Json file, extract "dialect" parameter and set the dialect of the rule
   */
  public String setDialect(Rule rule){
-  log.info("started set dialect");
+  log.info("executing dialect");
   String dialect = "dialect: \""+rule.getDialect()+"\"";
-  ruleService.addTabulationOrNewLine(dialect, 1, "\n");
+  ruleService.addTabulationOrNewLine(dialect, 1, "\\n");
 
   return dialect;
  }
@@ -82,7 +81,7 @@ public class PutControlServiceRefactored {
   * @return
   */
  public List<String> makeWhen(Rule rule){
-  log.info("started execute when");
+  log.info("executing when");
   List<String> when = rule.getWhen().stream()
           .map(this::buildFunction)
           .collect(Collectors.toList());
@@ -98,7 +97,7 @@ public class PutControlServiceRefactored {
   * @return
   */
  public List<String> makeThen(Rule rule){
-  log.info("started execute then");
+  log.info("executing then");
   List<String> then = rule.getThen().stream()
           .filter(Objects::nonNull)
           .map(expression -> ruleService.buildExpression(expression))
@@ -123,6 +122,7 @@ public class PutControlServiceRefactored {
   String stringFunction = function.getName()+" "
           +function.getOperator()+" "
           +function.getFunctionName()+"("+conditions.toString()+")";
+  ruleService.addTabulationOrNewLine(stringFunction, 1, "\\n");
 
   return stringFunction;
  }
@@ -160,5 +160,10 @@ public class PutControlServiceRefactored {
   return newList;
  }
 
+ /**
+  * Function that eliminates brackets from a string
+  */
+ java.util.function.Function<String, String> removeBrackets = x -> x.replace("[", "")
+         .replace("]", "");
 
 }

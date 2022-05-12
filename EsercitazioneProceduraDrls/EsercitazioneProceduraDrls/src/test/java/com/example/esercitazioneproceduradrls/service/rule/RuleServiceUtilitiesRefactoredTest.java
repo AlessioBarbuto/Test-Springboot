@@ -10,9 +10,9 @@ class RuleServiceUtilitiesRefactoredTest {
     RuleServiceUtilitiesRefactored ruleService = new RuleServiceUtilitiesRefactored();
 
     @Test
-    public void testMethod(){
+    public void testConcatenation(){
         Integer number = 2;
-        String separator = "t";
+        String separator = "\\n";
         String test = "stringa di test";
 
         String result = ruleService.addTabulationOrNewLine(test,number,separator);
